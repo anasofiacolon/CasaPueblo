@@ -1,18 +1,87 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="../css/admin.css"><title>Dashboard | Casa Pueblo</title></head><body class="admin-body"><div class="admin-shell">
-<aside class="sidebar">
-  <a href="dashboard.html" class="logo">Casa Pueblo<span>ADMINISTRACIÓN</span></a>
-  <nav>
-    <a href="dashboard.html">Dashboard</a><a href="submissions.html">Solicitudes</a>
-    <a href="submission.html">Revisión</a><a href="comunidades.html">Comunidades</a><a href="administradores.html">Administradores</a>
-  </nav>
-  <div class="sidebar-footer"><a href="../index.html">← Ver sitio público</a><a class="logout" href="login.html" id="logoutLink">Cerrar sesión</a></div>
-</aside>
-<main class="admin-main"><div class="admin-top"><div><p class="eyebrow">ADMINISTRACIÓN</p><h1 style="font-size:3rem">Dashboard</h1></div><span>Administrador</span></div><div class="admin-grid"><div class="stat"><p>Solicitudes pendientes</p><strong>08</strong></div><div class="stat"><p>Comunidades publicadas</p><strong>24</strong></div><div class="stat"><p>Comunidades ocultas</p><strong>03</strong></div></div><section style="margin-top:25px" class="admin-card"><div class="toolbar"><h2 style="font-size:1.5rem">Actividad reciente</h2><a href="submissions.html">Ver solicitudes →</a></div><div class="table-wrap"><table class="table"><thead><tr><th>Comunidad</th><th>Estado</th><th>Fecha</th><th>Acción</th></tr></thead><tbody><tr><td>Comunidad A</td><td><span class="status pending">Pendiente</span></td><td>06 nov 2026</td><td><a href="submission.html">Revisar</a></td></tr><tr><td>Comunidad B</td><td><span class="status approved">Aprobada</span></td><td>05 nov 2026</td><td><a href="comunidades.html">Ver</a></td></tr></tbody></table></div></section></main></div>
-<script>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/admin.css">
+    <title>Dashboard | Casa Pueblo</title>
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="sidebar"><a href="dashboard.html" class="logo">Casa Pueblo<span>ADMINISTRACIÓN</span></a>
+        <nav>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="submissions.html">Solicitudes</a>
+          <a href="submission.html">Revisión</a>
+          <a href="comunidades.html">Comunidades</a>
+          <a href="administradores.html">Administradores</a>
+        </nav>
+        <div class="sidebar-footer"><a href="../index.html">← Ver sitio público</a><a class="logout" href="login.html" id="logoutLink">Cerrar sesión</a></div></aside>
+      <main class="admin-main">
+        <div class="admin-top">
+          <div>
+            <p class="eyebrow">ADMINISTRACIÓN</p>
+            <h1 style="font-size:3rem">Dashboard</h1>
+          </div><span>Administrador</span>
+        </div>
+        <div class="admin-grid">
+          <div class="stat">
+            <p>Solicitudes pendientes</p><strong>08</strong>
+          </div>
+          <div class="stat">
+            <p>Comunidades publicadas</p><strong>24</strong>
+          </div>
+          <div class="stat">
+            <p>Comunidades ocultas</p><strong>03</strong>
+          </div>
+        </div>
+        <section style="margin-top:25px" class="admin-card">
+          <div class="toolbar">
+            <h2 style="font-size:1.5rem">Actividad reciente</h2><a href="submissions.html">Ver solicitudes →</a>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Comunidad
+                  </th>
+                  <th>Estado
+                  </th>
+                  <th>Fecha
+                  </th>
+                  <th>Acción
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Comunidad A
+                  </td>
+                  <td><span class="status pending">Pendiente</span></td>
+                  <td>06 nov 2026
+                  </td>
+                  <td><a href="submission.html">Revisar</a></td>
+                </tr>
+                <tr>
+                  <td>Comunidad B
+                  </td>
+                  <td><span class="status approved">Aprobada</span></td>
+                  <td>05 nov 2026
+                  </td>
+                  <td><a href="comunidades.html">Ver</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
 document.getElementById("logoutLink")?.addEventListener("click", function(e) {
     e.preventDefault();
     localStorage.removeItem("casaPuebloAdminSession");
     window.location.href = "login.html";
 });
-</script>
-</body></html>
+    </script>
+  </body>
+</html>

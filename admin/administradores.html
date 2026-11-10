@@ -1,148 +1,95 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administradores | Casa Pueblo</title>
     <link rel="stylesheet" href="../css/admin.css">
-</head>
-
-<body class="admin-body">
-<div class="admin-shell">
-
-    <aside class="sidebar">
-        <a href="dashboard.html" class="logo">Casa Pueblo<span>ADMINISTRACIÓN</span></a>
-
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="sidebar"><a href="dashboard.html" class="logo">Casa Pueblo<span>ADMINISTRACIÓN</span></a>
         <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="submissions.html">Solicitudes</a>
-            <a href="comunidades.html">Comunidades</a>
-            <a href="administradores.html" class="active">Administradores</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="submissions.html">Solicitudes</a>
+          <a href="comunidades.html">Comunidades</a>
+          <a href="administradores.html" class="active">Administradores</a>
         </nav>
-
-        <div class="sidebar-footer">
-            <a href="../index.html">← Ver sitio público</a>
-            <a class="logout" href="login.html" id="logoutLink">Cerrar sesión</a>
-        </div>
-    </aside>
-
-    <main class="admin-main">
+        <div class="sidebar-footer"><a href="../index.html">← Ver sitio público</a><a class="logout" href="login.html" id="logoutLink">Cerrar sesión</a></div></aside>
+      <main class="admin-main">
         <header class="admin-top">
-            <div>
-                <p class="eyebrow">ADMINISTRACIÓN</p>
-                <h1 class="admin-title">Administradores</h1>
-                <p class="admin-subtitle">
-                    Controla quién puede acceder y administrar la plataforma.
-                </p>
-            </div>
-
-            <div class="admin-user-chip">
-                <span class="admin-avatar">A</span>
-                <div>
-                    <strong>Administrador</strong>
-                    <small>Sesión activa</small>
-                </div>
-            </div>
+          <div>
+            <p class="eyebrow">ADMINISTRACIÓN</p>
+            <h1 class="admin-title">Administradores</h1>
+            <p class="admin-subtitle">
+                    Controla quién puede acceder y administrar la plataforma.</p>
+          </div>
+          <div class="admin-user-chip"><span class="admin-avatar">A</span>
+            <div><strong>Administrador</strong><small>Sesión activa</small></div></div>
         </header>
-
         <section class="admin-card">
-            <div class="toolbar">
-                <div>
-                    <h2>Usuarios administrativos</h2>
-                    <p class="muted">
-                        Las cuentas no tienen registro público. Solo un administrador autorizado puede crear nuevos accesos.
-                    </p>
-                </div>
-
-                <button class="button primary" type="button" id="openAddAdmin">
+          <div class="toolbar">
+            <div>
+              <h2>Usuarios administrativos</h2>
+              <p class="muted">
+                        Las cuentas no tienen registro público. Solo un administrador autorizado puede crear nuevos accesos.</p>
+            </div><button class="button primary" type="button" id="openAddAdmin">
                     + Añadir administrador
                 </button>
-            </div>
-
-            <div class="table-wrap">
-                <table class="table admin-users-table">
-                    <thead>
-                        <tr>
-                            <th>Administrador</th>
-                            <th>Usuario</th>
-                            <th>Correo</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminTableBody"></tbody>
-                </table>
-            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="table admin-users-table">
+              <thead>
+                <tr>
+                  <th>Administrador
+                  </th>
+                  <th>Usuario
+                  </th>
+                  <th>Correo
+                  </th>
+                  <th>Estado
+                  </th>
+                  <th>Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody"></tbody>
+            </table>
+          </div>
         </section>
-
         <section class="security-note">
-            <div class="security-icon">🔐</div>
-            <div>
-                <strong>Control de acceso</strong>
-                <p>
-                    En la versión final, estas cuentas estarán protegidas por autenticación segura y permisos definidos por el backend.
-                </p>
-            </div>
+          <div class="security-icon">🔐
+          </div>
+          <div><strong>Control de acceso</strong>
+            <p>
+                    En la versión final, estas cuentas estarán protegidas por autenticación segura y permisos definidos por el backend.</p></div>
         </section>
-    </main>
-</div>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="adminModal" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <button class="modal-close" id="closeModal" type="button" aria-label="Cerrar">×</button>
-
+      </main>
+    </div>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="adminModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="closeModal" type="button" aria-label="Cerrar">×</button>
         <p class="eyebrow">NUEVA CUENTA</p>
         <h2 id="modalTitle">Añadir administrador</h2>
         <p class="modal-description">
-            Crea una cuenta para una persona autorizada a administrar la plataforma.
-        </p>
-
-        <form id="adminForm">
-            <input type="hidden" id="editIndex">
-
-            <div class="form-group">
-                <label for="adminName">Nombre completo</label>
-                <input id="adminName" type="text" placeholder="Ej. María Rivera" required>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="adminUsername">Usuario</label>
-                    <input id="adminUsername" type="text" placeholder="Ej. mrivera" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="adminEmail">Correo electrónico</label>
-                    <input id="adminEmail" type="email" placeholder="correo@ejemplo.com" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="adminPassword">Contraseña</label>
-                    <input id="adminPassword" type="password" placeholder="Contraseña" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="adminPasswordConfirm">Confirmar contraseña</label>
-                    <input id="adminPasswordConfirm" type="password" placeholder="Repite la contraseña" required>
-                </div>
-            </div>
-
-            <p class="form-hint">
-                Demo: los datos se guardan localmente en este navegador. En producción se manejarán desde el backend.
-            </p>
-
-            <div class="modal-actions">
-                <button type="button" class="button secondary" id="cancelModal">Cancelar</button>
-                <button type="submit" class="button primary" id="saveAdmin">Crear administrador</button>
-            </div>
-        </form>
+            Crea una cuenta para una persona autorizada a administrar la plataforma.</p>
+        <form id="adminForm"><input type="hidden" id="editIndex">
+          <div class="form-group"><label for="adminName">Nombre completo</label><input id="adminName" type="text" placeholder="Ej. María Rivera" required></div>
+          <div class="form-row">
+            <div class="form-group"><label for="adminUsername">Usuario</label><input id="adminUsername" type="text" placeholder="Ej. mrivera" required></div>
+            <div class="form-group"><label for="adminEmail">Correo electrónico</label><input id="adminEmail" type="email" placeholder="correo@ejemplo.com" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label for="adminPassword">Contraseña</label><input id="adminPassword" type="password" placeholder="Contraseña" required></div>
+            <div class="form-group"><label for="adminPasswordConfirm">Confirmar contraseña</label><input id="adminPasswordConfirm" type="password" placeholder="Repite la contraseña" required></div>
+          </div>
+          <p class="form-hint">
+                Demo: los datos se guardan localmente en este navegador. En producción se manejarán desde el backend.</p>
+          <div class="modal-actions"><button type="button" class="button secondary" id="cancelModal">Cancelar</button><button type="submit" class="button primary" id="saveAdmin">Crear administrador</button>
+      </div>
+        </form></div>
     </div>
-</div>
-
-<script>
+    <script>
 const STORAGE_KEY = "casaPuebloAdmins";
 
 const defaultAdmins = [
@@ -355,7 +302,6 @@ document.getElementById("logoutLink").addEventListener("click", event => {
 });
 
 renderAdmins();
-</script>
-
-</body>
+    </script>
+  </body>
 </html>
