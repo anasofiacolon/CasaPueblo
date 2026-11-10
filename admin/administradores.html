@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administradores | Casa Pueblo</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body class="admin-body">
+<div class="admin-shell">
+
+    <aside class="sidebar">
+        <a href="dashboard.html" class="logo">Casa Pueblo<span>ADMINISTRACIÓN</span></a>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="submissions.html">Solicitudes</a>
+            <a href="comunidades.html">Comunidades</a>
+            <a href="administradores.html" class="active">Administradores</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="../index.html">← Ver sitio público</a>
+            <a class="logout" href="login.html" id="logoutLink">Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-top">
+            <div>
+                <p class="eyebrow">ADMINISTRACIÓN</p>
+                <h1 class="admin-title">Administradores</h1>
+                <p class="admin-subtitle">
+                    Controla quién puede acceder y administrar la plataforma.
+                </p>
+            </div>
+
+            <div class="admin-user-chip">
+                <span class="admin-avatar">A</span>
+                <div>
+                    <strong>Administrador</strong>
+                    <small>Sesión activa</small>
+                </div>
+            </div>
+        </header>
+
+        <section class="admin-card">
+            <div class="toolbar">
+                <div>
+                    <h2>Usuarios administrativos</h2>
+                    <p class="muted">
+                        Las cuentas no tienen registro público. Solo un administrador autorizado puede crear nuevos accesos.
+                    </p>
+                </div>
+
+                <button class="button primary" type="button" id="openAddAdmin">
+                    + Añadir administrador
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table admin-users-table">
+                    <thead>
+                        <tr>
+                            <th>Administrador</th>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="security-note">
+            <div class="security-icon">🔐</div>
+            <div>
+                <strong>Control de acceso</strong>
+                <p>
+                    En la versión final, estas cuentas estarán protegidas por autenticación segura y permisos definidos por el backend.
+                </p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="adminModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="closeModal" type="button" aria-label="Cerrar">×</button>
+
+        <p class="eyebrow">NUEVA CUENTA</p>
+        <h2 id="modalTitle">Añadir administrador</h2>
+        <p class="modal-description">
+            Crea una cuenta para una persona autorizada a administrar la plataforma.
+        </p>
+
+        <form id="adminForm">
+            <input type="hidden" id="editIndex">
+
+            <div class="form-group">
+                <label for="adminName">Nombre completo</label>
+                <input id="adminName" type="text" placeholder="Ej. María Rivera" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="adminUsername">Usuario</label>
+                    <input id="adminUsername" type="text" placeholder="Ej. mrivera" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminEmail">Correo electrónico</label>
+                    <input id="adminEmail" type="email" placeholder="correo@ejemplo.com" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="adminPassword">Contraseña</label>
+                    <input id="adminPassword" type="password" placeholder="Contraseña" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPasswordConfirm">Confirmar contraseña</label>
+                    <input id="adminPasswordConfirm" type="password" placeholder="Repite la contraseña" required>
+                </div>
+            </div>
+
+            <p class="form-hint">
+                Demo: los datos se guardan localmente en este navegador. En producción se manejarán desde el backend.
+            </p>
+
+            <div class="modal-actions">
+                <button type="button" class="button secondary" id="cancelModal">Cancelar</button>
+                <button type="submit" class="button primary" id="saveAdmin">Crear administrador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const STORAGE_KEY = "casaPuebloAdmins";
+
+const defaultAdmins = [
+    {
+        name: "Ana Colón",
+        username: "anasofia",
+        email: "ana@example.com",
+        password: "demo123",
+        active: true
+    },
+    {
+        name: "Juan Pérez",
+        username: "jperez",
+        email: "juan@example.com",
+        password: "demo123",
+        active: true
+    },
+    {
+        name: "María Rivera",
+        username: "mrivera",
+        email: "maria@example.com",
+        password: "demo123",
+        active: false
+    }
+];
+
+function getAdmins() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultAdmins));
+        return [...defaultAdmins];
+    }
+    return JSON.parse(saved);
+}
+
+function saveAdmins(admins) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(admins));
+}
+
+function initials(name) {
+    return name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(word => word[0].toUpperCase())
+        .join("");
+}
+
+function renderAdmins() {
+    const tbody = document.getElementById("adminTableBody");
+    const admins = getAdmins();
+
+    tbody.innerHTML = admins.map((admin, index) => `
+        <tr>
+            <td>
+                <div class="table-user">
+                    <span class="table-avatar">${initials(admin.name)}</span>
+                    <div>
+                        <strong>${escapeHtml(admin.name)}</strong>
+                        <small>Administrador</small>
+                    </div>
+                </div>
+            </td>
+            <td>${escapeHtml(admin.username)}</td>
+            <td>${escapeHtml(admin.email)}</td>
+            <td>
+                <span class="status ${admin.active ? "approved" : "inactive"}">
+                    ${admin.active ? "Activo" : "Inactivo"}
+                </span>
+            </td>
+            <td>
+                <div class="actions">
+                    <button class="small-button" onclick="editAdmin(${index})">Editar</button>
+                    <button class="small-button ${admin.active ? "reject" : "approve"}"
+                            onclick="toggleAdmin(${index})">
+                        ${admin.active ? "Desactivar" : "Activar"}
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join("");
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    }[char]));
+}
+
+const modal = document.getElementById("adminModal");
+const form = document.getElementById("adminForm");
+
+function openModal(index = null) {
+    form.reset();
+    document.getElementById("editIndex").value = index ?? "";
+    document.getElementById("modalTitle").textContent =
+        index === null ? "Añadir administrador" : "Editar administrador";
+    document.getElementById("saveAdmin").textContent =
+        index === null ? "Crear administrador" : "Guardar cambios";
+
+    if (index !== null) {
+        const admin = getAdmins()[index];
+        document.getElementById("adminName").value = admin.name;
+        document.getElementById("adminUsername").value = admin.username;
+        document.getElementById("adminEmail").value = admin.email;
+        document.getElementById("adminPassword").value = admin.password;
+        document.getElementById("adminPasswordConfirm").value = admin.password;
+    }
+
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+    document.getElementById("adminName").focus();
+}
+
+function closeModal() {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+document.getElementById("openAddAdmin").addEventListener("click", () => openModal());
+document.getElementById("closeModal").addEventListener("click", closeModal);
+document.getElementById("cancelModal").addEventListener("click", closeModal);
+
+modal.addEventListener("click", event => {
+    if (event.target === modal) closeModal();
+});
+
+form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const name = document.getElementById("adminName").value.trim();
+    const username = document.getElementById("adminUsername").value.trim();
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+    const confirmation = document.getElementById("adminPasswordConfirm").value;
+    const editIndex = document.getElementById("editIndex").value;
+
+    if (password !== confirmation) {
+        alert("Las contraseñas no coinciden.");
+        return;
+    }
+
+    const admins = getAdmins();
+
+    const duplicate = admins.some((admin, index) =>
+        admin.username.toLowerCase() === username.toLowerCase() &&
+        String(index) !== editIndex
+    );
+
+    if (duplicate) {
+        alert("Ese nombre de usuario ya existe.");
+        return;
+    }
+
+    if (editIndex === "") {
+        admins.push({
+            name,
+            username,
+            email,
+            password,
+            active: true
+        });
+        alert("Administrador creado correctamente.");
+    } else {
+        const index = Number(editIndex);
+        admins[index] = {
+            ...admins[index],
+            name,
+            username,
+            email,
+            password
+        };
+        alert("Administrador actualizado correctamente.");
+    }
+
+    saveAdmins(admins);
+    renderAdmins();
+    closeModal();
+});
+
+window.editAdmin = function(index) {
+    openModal(index);
+};
+
+window.toggleAdmin = function(index) {
+    const admins = getAdmins();
+
+    if (admins[index].active) {
+        const activeCount = admins.filter(admin => admin.active).length;
+
+        if (activeCount === 1) {
+            alert("Debe existir al menos un administrador activo.");
+            return;
+        }
+    }
+
+    admins[index].active = !admins[index].active;
+    saveAdmins(admins);
+    renderAdmins();
+};
+
+document.getElementById("logoutLink").addEventListener("click", event => {
+    event.preventDefault();
+    localStorage.removeItem("casaPuebloAdminSession");
+    window.location.href = "login.html";
+});
+
+renderAdmins();
+</script>
+
+</body>
+</html>

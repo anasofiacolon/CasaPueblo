@@ -1,0 +1,308 @@
+@import url('styles.css');
+
+/* ADMINISTRATIVE LAYOUT */
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.sidebar .logo {
+    display: block;
+    letter-spacing: -.02em;
+}
+
+.sidebar .logo span {
+    margin-top: 5px;
+    opacity: .7;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    display: grid;
+    gap: 6px;
+}
+
+.sidebar-footer a {
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: #d9e7df;
+}
+
+.sidebar-footer a:hover {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+}
+
+.admin-title {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -.04em;
+    margin: 4px 0 10px;
+}
+
+.admin-subtitle {
+    max-width: 650px;
+}
+
+.admin-user-chip {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 15px 8px 8px;
+}
+
+.admin-user-chip small {
+    display: block;
+    color: var(--muted);
+    font-size: .75rem;
+}
+
+.admin-avatar,
+.table-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-weight: 800;
+}
+
+.table-avatar {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+}
+
+.muted {
+    color: var(--muted);
+    margin-top: 6px;
+    max-width: 700px;
+}
+
+.admin-users-table td {
+    vertical-align: middle;
+}
+
+.table-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-user small {
+    display: block;
+    color: var(--muted);
+    font-size: .78rem;
+}
+
+.status.inactive {
+    background: #edf0ee;
+    color: #65706b;
+}
+
+.security-note {
+    margin-top: 20px;
+    padding: 20px 22px;
+    border: 1px solid #cfe0d3;
+    border-radius: 16px;
+    background: #eef6ef;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.security-icon {
+    font-size: 1.4rem;
+}
+
+.security-note strong {
+    color: var(--green-dark);
+}
+
+.security-note p {
+    margin-top: 3px;
+}
+
+/* MODAL */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(16, 42, 33, .52);
+    backdrop-filter: blur(5px);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-card {
+    position: relative;
+    width: min(720px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 34px;
+    box-shadow: 0 25px 70px rgba(23,59,47,.2);
+    transform: translateY(12px);
+    transition: transform .2s ease;
+}
+
+.modal-overlay.show .modal-card {
+    transform: translateY(0);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 17px;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f4f1;
+    color: var(--green-dark);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    background: var(--green-light);
+}
+
+.modal-card h2 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.modal-description {
+    margin-bottom: 25px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-hint {
+    font-size: .82rem;
+    color: var(--muted);
+    background: #f5f7f5;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.button.primary {
+    background: var(--green-dark);
+    color: #fff;
+}
+
+.button.primary:hover {
+    background: var(--green);
+}
+
+.button.secondary {
+    background: #fff;
+    color: var(--green-dark);
+}
+
+.button {
+    cursor: pointer;
+}
+
+/* LOGIN */
+.login-card {
+    box-shadow: 0 25px 70px rgba(23,59,47,.10);
+}
+
+.login-card .logo {
+    margin-bottom: 30px;
+}
+
+.login-card h1 {
+    margin-top: 4px;
+}
+
+.login-description {
+    margin: 10px 0 25px;
+}
+
+.login-error {
+    color: var(--danger);
+    font-size: .9rem;
+    min-height: 22px;
+    margin-bottom: 4px;
+}
+
+.demo-credentials {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #f2f6f2;
+    color: var(--green-dark);
+    display: grid;
+    gap: 2px;
+    font-size: .82rem;
+}
+
+.demo-credentials strong {
+    margin-bottom: 3px;
+}
+
+.login-back {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.login-back a {
+    color: var(--green);
+    font-weight: 700;
+}
+
+@media (max-width: 850px) {
+    .sidebar {
+        position: relative;
+        height: auto;
+    }
+
+    .sidebar-footer {
+        margin-top: 12px;
+    }
+
+    .admin-top {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .modal-card {
+        padding: 28px 22px;
+    }
+}
