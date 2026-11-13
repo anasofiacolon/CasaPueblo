@@ -230,6 +230,7 @@ a, button, input, textarea, select { transition: color .18s var(--ease), backgro
 }
 
 .section-title-row { align-items: flex-end; }
+.section-title-row > a { white-space: nowrap; padding-bottom: 8px; }
 .section-title-row a, .community-content a, .map-list a, .admin-card .toolbar a {
   color: var(--green);
   font-weight: 700;
@@ -349,7 +350,7 @@ a, button, input, textarea, select { transition: color .18s var(--ease), backgro
   background: var(--sunrise);
   pointer-events: none;
 }
-.page-header .container { position: relative; z-index: 1; padding: 0; }
+.page-header .container { position: relative; z-index: 1; }
 .page-header .eyebrow { color: var(--leaf); }
 .page-header h1 { color: #fff; font-size: clamp(2.7rem, 6.2vw, 5rem); animation: rise .8s var(--ease) both; }
 .page-header p:not(.eyebrow) { color: var(--on-dark); font-size: 1.14rem; max-width: 620px; }
@@ -658,6 +659,9 @@ a, button, input, textarea, select { transition: color .18s var(--ease), backgro
   .logo::before { width: 32px; height: 32px; }
   .hero h1 { font-size: clamp(2.1rem, 9.4vw, 3.4rem); }
   .hero-tagline { font-size: 1.25rem; }
+  /* Widen the drawing so the whole sun stays in view on a narrow screen. */
+  .hero-art { width: 160%; left: -45%; }
+  .section-title-row { flex-direction: column; align-items: flex-start; gap: 6px; }
   .page-header h1 { font-size: clamp(2.5rem, 11.5vw, 4rem); }
   .page-header::after { width: 320px; height: 320px; right: -120px; bottom: -190px; opacity: .8; }
   .map-section { margin: 20px 16px 70px; }

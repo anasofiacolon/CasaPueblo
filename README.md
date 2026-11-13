@@ -2,7 +2,7 @@
 
 Sitio web para visibilizar iniciativas de energía comunitaria de Puerto Rico, América Latina y el Caribe, con un portal de administración para Casa Pueblo.
 
-- **Frontend:** las 12 pantallas HTML originales (`*.html`, `admin/*.html`) con `css/styles.css` y `css/admin.css` sin modificar. Lo añadido vive en `css/extras.css`, `js/main.js` (sitio público) y `js/admin.js` (portal).
+- **Frontend:** las 12 pantallas HTML originales (`*.html`, `admin/*.html`) con `css/styles.css` y `css/admin.css` sin modificar. Lo añadido vive en `css/extras.css` (funcionalidad), `css/theme.css` (tema visual: tipografía, ilustraciones y acabados, con la misma paleta), `js/main.js` (sitio público) y `js/admin.js` (portal). Las fuentes (`fonts/`, licencia SIL OFL) y las ilustraciones (`img/`) se sirven desde el propio sitio, sin servicios de terceros.
 - **Backend:** un Cloudflare Worker (`src/`) que sirve los archivos estáticos y la API `/api/*` desde el mismo origen (sin CORS).
 - **Base de datos:** Cloudflare D1 (SQLite), esquema en `migrations/`.
 - **Mapa:** Leaflet 1.9.4 + OpenStreetMap (sin llaves de API).
@@ -47,7 +47,7 @@ Opcional: `npx wrangler secret put SYNC_TOKEN` (mínimo 16 caracteres) permite q
 
 **No añadas bindings `r2_buckets` ni `images` a `wrangler.jsonc`:** Cloudflare los bloquea en cuentas sin tarjeta y el despliegue fallaría.
 
-`.assetsignore` limita lo que se publica como archivo estático a `*.html`, `admin/`, `css/` y `js/`. El código (`src/`), las migraciones y los secretos no son accesibles por URL. Si añades una carpeta pública nueva, agrégala ahí.
+`.assetsignore` limita lo que se publica como archivo estático a `*.html`, `admin/`, `css/`, `js/`, `fonts/` e `img/`. El código (`src/`), las migraciones y los secretos no son accesibles por URL. Si añades una carpeta pública nueva, agrégala ahí.
 
 > Pendiente de verificar en el primer despliegue: el plan gratuito de Workers limita el tiempo de CPU por solicitud a 10 ms y el login calcula PBKDF2 con 100,000 iteraciones. En local funciona; hay que confirmar en producción que el login no excede el límite (si lo excediera, Cloudflare responde con el error 1102).
 
@@ -178,7 +178,6 @@ El código de la sincronización (`src/lib/excel-sync/`):
 
 ## Pendiente para próximos sprints
 
-- El botón "Editar contenido" (información del proyecto) en `admin/comunidades.html` aún no abre un editor; la API `PUT /api/admin/project-info/:section_key` ya existe.
 - Imágenes de comunidades: no hay almacenamiento de archivos (R2 no está disponible sin tarjeta).
 - Conectar el adaptador de Microsoft Graph cuando Casa Pueblo confirme dónde está alojado el libro.
 - Pantalla para revisar los conflictos de sincronización registrados en `audit_logs`.
