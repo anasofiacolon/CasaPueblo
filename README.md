@@ -50,6 +50,16 @@ Opcional: `npx wrangler secret put SYNC_TOKEN` (mínimo 16 caracteres) permite q
 
 > Pendiente de verificar en el primer despliegue: el plan gratuito de Workers limita el tiempo de CPU por solicitud a 10 ms y el login calcula PBKDF2 con 100,000 iteraciones. En local funciona; hay que confirmar en producción que el login no excede el límite (si lo excediera, Cloudflare responde con el error 1102).
 
+## Qué no se sube al repositorio
+
+Este repositorio es **público**. `.gitignore` mantiene fuera de él:
+
+- **Secretos:** `.dev.vars`, `.env*`, llaves y certificados. En producción se definen con `npx wrangler secret put`; solo se versionan las plantillas `*.example`.
+- **Datos de Casa Pueblo:** el libro de Excel y cualquier exportación (`*.xlsx`, `*.csv`, …). Guárdalos en `private/` (ignorada) y cárgalos a la base de datos con `/api/sync/excel`. Contienen correos de contacto y notas internas.
+- **Bases de datos y respaldos:** `.wrangler/`, `*.sqlite`, `*.dump.sql`, `backups/`.
+
+Por la misma razón, `migrations/` solo debe contener datos que ya son públicos: nunca correos de contacto, notas internas, ubicaciones no autorizadas ni hashes de contraseñas. Antes de un commit, `git status` no debe listar ninguno de esos archivos.
+
 ## Reglas de privacidad
 
 Estas reglas se aplican en el esquema, en la API y en los formularios.

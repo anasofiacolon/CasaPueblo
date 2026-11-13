@@ -1,4 +1,67 @@
-node_modules/
-.wrangler/
+# This repository is PUBLIC. Anything listed here stays on your machine only.
+
+# --- Secrets and local configuration ---------------------------------------
+# Real values live in .dev.vars (local) and `wrangler secret put` (production).
+# Only the *.example templates, which contain placeholders, are committed.
 .dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+
+# --- Client data ------------------------------------------------------------
+# Casa Pueblo's workbook and any export of it contain private contact details
+# and internal notes. They must never be committed: keep them in private/ and
+# load them into the database through /api/sync/excel.
+private/
+*.xlsx
+*.xlsm
+*.xls
+*.ods
+*.csv
+*.tsv
+~$*
+
+# --- Databases, dumps and backups -------------------------------------------
+# The local D1 database lives in .wrangler/. Exports of a real database hold
+# submissions, contact emails and password hashes.
+.wrangler/
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.db
+*.dump
+*.dump.sql
+*.backup.sql
+backups/
+
+# --- Dependencies and build output ------------------------------------------
+node_modules/
+dist/
+coverage/
+worker-configuration.d.ts
+
+# --- Logs and temporary files -----------------------------------------------
+*.log
+npm-debug.log*
+*.tmp
+.cache/
+
+# --- Operating system and editors -------------------------------------------
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# --- Local AI assistant settings and notes ----------------------------------
+.claude/
+CLAUDE.local.md
