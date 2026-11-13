@@ -22,12 +22,14 @@
 
   function communityCard(c, linkText) {
     const place = displayPlace(c);
+    const tags = c.tags.slice(0, 3).map((t) => `<span class="tag">${esc(t)}</span>`).join('');
     return `<article class="community-card">
-      <div class="community-image">Imagen de comunidad</div>
+      <div class="community-image" aria-hidden="true"></div>
       <div class="community-content">
         ${place ? `<p class="location">📍 ${esc(place)}</p>` : ''}
         <h3>${esc(displayName(c))}</h3>
-        <p>${esc(c.description || '')}</p><a href="${profileUrl(c)}">${linkText} →</a>
+        <p>${esc(c.description || '')}</p>
+        ${tags ? `<div class="tag-row">${tags}</div>` : ''}<a href="${profileUrl(c)}">${linkText} →</a>
       </div>
     </article>`;
   }
@@ -113,28 +115,32 @@
       [c.location_text, c.country].filter((v, i, a) => v && a.indexOf(v) === i).join(' · ') || 'La comunidad no ha autorizado la publicación de su ubicación.';
   }
 
-  // ---------- mapa.html: Leaflet + OpenStreetMap ----------
+  // ---------- Leaflet + OpenStreetMap (mapa.html with its side list; index.html preview) ----------
   async function map(container) {
-    const listEl = $('.map-list');
+    const listEl = $('.map-list'); // only on mapa.html
     let list;
     try {
       list = await loadCommunities();
     } catch {
-      listEl.innerHTML = message('No pudimos cargar las comunidades.');
+      container.textContent = 'No pudimos cargar el mapa.';
+      if (listEl) listEl.innerHTML = message('No pudimos cargar las comunidades.');
       return;
     }
     // Only communities that authorized a public location carry coordinates.
     const located = list.filter((c) => c.latitude !== null && c.longitude !== null);
-    listEl.innerHTML = located.length
-      ? located.map((c, i) => `<article class="card" data-index="${i}"><h3>${esc(displayName(c))}</h3><p>📍 ${esc(displayPlace(c))}</p><button class="link" type="button">Ver en el mapa</button><a href="${profileUrl(c)}">Ver perfil →</a></article>`).join('')
-      : message('Aún no hay comunidades con ubicación pública.');
+    if (listEl) {
+      listEl.innerHTML = located.length
+        ? located.map((c, i) => `<article class="card" data-index="${i}"><h3>${esc(displayName(c))}</h3><p>📍 ${esc(displayPlace(c))}</p><button class="link" type="button">Ver en el mapa</button><a href="${profileUrl(c)}">Ver perfil →</a></article>`).join('')
+        : message('Aún no hay comunidades con ubicación pública.');
+    }
 
     if (typeof L === 'undefined') {
       container.textContent = 'No se pudo cargar el mapa.';
       return;
     }
     container.textContent = '';
-    const leaflet = L.map(container, { scrollWheelZoom: false }).setView([15, -78], 4);
+    // Default view: the Caribbean and Latin America.
+    const leaflet = L.map(container, { scrollWheelZoom: false }).setView([12, -75], 3);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -143,8 +149,12 @@
     const markers = located.map((c) => {
       const popup = document.createElement('div');
       popup.innerHTML = `<strong>${esc(displayName(c))}</strong><br>${esc(displayPlace(c))}<br><a href="${profileUrl(c)}">Ver perfil →</a>`;
-      return L.marker([c.latitude, c.longitude]).addTo(leaflet).bindPopup(popup);
+      return L.marker([c.latitude, c.longitude], { title: displayName(c), alt: displayName(c) }).addTo(leaflet).bindPopup(popup);
     });
+    if (markers.length > 1) leaflet.fitBounds(L.featureGroup(markers).getBounds().pad(0.3));
+    else if (markers.length === 1) leaflet.setView(markers[0].getLatLng(), 9);
+    if (!listEl) return;
+
     const focus = (i) => {
       leaflet.setView(markers[i].getLatLng(), 11);
       markers[i].openPopup();
@@ -154,9 +164,6 @@
       const card = event.target.closest('button.link')?.closest('.card');
       if (card) focus(Number(card.dataset.index));
     });
-    if (markers.length > 1) leaflet.fitBounds(L.featureGroup(markers).getBounds().pad(0.3));
-    else if (markers.length === 1) leaflet.setView(markers[0].getLatLng(), 9);
-
     const wanted = new URLSearchParams(location.search).get('slug');
     const index = located.findIndex((c) => c.slug === wanted);
     if (index >= 0) focus(index);
@@ -245,6 +252,7 @@
     '[data-communities="all"]': directory,
     '[data-profile="root"]': profile,
     '#communityMap': map,
+    '#homeMap': map,
     '#submissionForm': submissionForm,
     '[data-section-key]': projectInfo,
   };

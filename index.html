@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/extras.css">
-    <title>Iniciativa Latinoamérica y del Caribe de energías comunitarias</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <title>Iniciativa Latinoamericana y del Caribe de Energías Comunitarias | Casa Pueblo</title>
   </head>
   <body>
     <header class="navbar">
       <div class="nav-container">
-        <a href="index.html" class="logo">Casa Pueblo<span>COMUNIDADES QUE ENCIENDEN</span></a>
+        <a href="index.html" class="logo">Casa Pueblo<span>ENERGÍAS COMUNITARIAS</span></a>
         <nav class="nav-links">
           <a href="admin/login.html">Administradores</a>
           <a href="comunidades.html">Comunidades</a>
@@ -23,10 +26,30 @@
     </header>
     <main>
       <section class="hero">
+        <svg class="hero-art" viewBox="0 0 1440 480" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+          <g fill="#f7f4ec">
+            <circle cx="1010" cy="250" r="400" opacity=".035"/>
+            <circle cx="1010" cy="250" r="300" opacity=".05"/>
+            <circle cx="1010" cy="250" r="205" opacity=".08"/>
+          </g>
+          <g class="hero-rays" stroke="#f7f4ec" stroke-width="2.5" stroke-linecap="round" opacity=".42"><line x1="1158.0" y1="250.0" x2="1186.0" y2="250.0"/><line x1="1154.3" y1="282.9" x2="1181.6" y2="289.2"/><line x1="1143.3" y1="314.2" x2="1168.6" y2="326.4"/><line x1="1125.7" y1="342.3" x2="1147.6" y2="359.7"/><line x1="1102.3" y1="365.7" x2="1119.7" y2="387.6"/><line x1="1074.2" y1="383.3" x2="1086.4" y2="408.6"/><line x1="1042.9" y1="394.3" x2="1049.2" y2="421.6"/><line x1="1010.0" y1="398.0" x2="1010.0" y2="426.0"/><line x1="977.1" y1="394.3" x2="970.8" y2="421.6"/><line x1="945.8" y1="383.3" x2="933.6" y2="408.6"/><line x1="917.7" y1="365.7" x2="900.3" y2="387.6"/><line x1="894.3" y1="342.3" x2="872.4" y2="359.7"/><line x1="876.7" y1="314.2" x2="851.4" y2="326.4"/><line x1="865.7" y1="282.9" x2="838.4" y2="289.2"/><line x1="862.0" y1="250.0" x2="834.0" y2="250.0"/><line x1="865.7" y1="217.1" x2="838.4" y2="210.8"/><line x1="876.7" y1="185.8" x2="851.4" y2="173.6"/><line x1="894.3" y1="157.7" x2="872.4" y2="140.3"/><line x1="917.7" y1="134.3" x2="900.3" y2="112.4"/><line x1="945.8" y1="116.7" x2="933.6" y2="91.4"/><line x1="977.1" y1="105.7" x2="970.8" y2="78.4"/><line x1="1010.0" y1="102.0" x2="1010.0" y2="74.0"/><line x1="1042.9" y1="105.7" x2="1049.2" y2="78.4"/><line x1="1074.2" y1="116.7" x2="1086.4" y2="91.4"/><line x1="1102.3" y1="134.3" x2="1119.7" y2="112.4"/><line x1="1125.7" y1="157.7" x2="1147.6" y2="140.3"/><line x1="1143.3" y1="185.8" x2="1168.6" y2="173.6"/><line x1="1154.3" y1="217.1" x2="1181.6" y2="210.8"/></g>
+          <circle cx="1010" cy="250" r="118" fill="#f7f4ec"/>
+          <path d="M0 300 C120 250 240 210 380 250 S600 330 740 290 S900 250 1010 300 S1250 250 1440 220 V480 H0Z" fill="#3d8166" opacity=".6"/>
+          <path d="M0 360 C160 300 300 300 460 345 S740 400 900 340 S1180 290 1300 330 S1400 350 1440 340 V480 H0Z" fill="#2a6650"/>
+          <path d="M0 410 C200 360 380 400 560 415 S860 380 1040 405 S1320 440 1440 400 V480 H0Z" fill="#1f5140"/>
+          <g class="hero-lights" fill="#f7f4ec">
+            <circle cx="140" cy="372" r="2.6"/><circle cx="228" cy="352" r="2.2"/><circle cx="318" cy="340" r="2.8"/><circle cx="452" cy="372" r="2.2"/>
+            <circle cx="590" cy="398" r="2.6"/><circle cx="702" cy="405" r="2.2"/><circle cx="842" cy="378" r="2.8"/><circle cx="934" cy="352" r="2.2"/>
+            <circle cx="1108" cy="328" r="2.6"/><circle cx="1212" cy="322" r="2.2"/><circle cx="1332" cy="356" r="2.8"/><circle cx="388" cy="420" r="2.4"/>
+            <circle cx="768" cy="428" r="2.4"/><circle cx="1178" cy="436" r="2.4"/><circle cx="1012" cy="424" r="2.2"/><circle cx="74" cy="424" r="2.2"/>
+          </g>
+          <path d="M0 452 C240 425 480 470 720 452 S1200 430 1440 456 V480 H0Z" fill="#f7f4ec"/>
+        </svg>
         <div class="hero-content">
-          <p class="eyebrow">INICIATIVA LATINOAMÉRICA Y DEL CARIBE DE ENERGÍAS COMUNITARIAS</p>
-          <h1>Comunidades que <span>encienden su propio camino.</span></h1>
-          <p class="hero-description">Energía solar y justicia climática. Conoce las historias de comunidades que enfrentan la crisis climática y la exclusión energética generando y gobernando su propia luz.</p>
+          <p class="eyebrow">ENERGÍA SOLAR Y JUSTICIA CLIMÁTICA</p>
+          <h1>Iniciativa Latinoamericana y del Caribe de <span>Energías Comunitarias</span></h1>
+          <p class="hero-tagline">Comunidades que encienden su propio camino.</p>
+          <p class="hero-description">Conoce las historias de comunidades que enfrentan la crisis climática y la exclusión energética generando y gobernando su propia luz.</p>
           <div class="hero-actions">
             <a class="button primary" href="comunidades.html">Explorar comunidades</a>
             <a class="button secondary" href="mapa.html">Ver mapa</a></div>
@@ -102,7 +125,7 @@
           <h2>Descubre las comunidades en el mapa.</h2>
           <p>Explora dónde están ubicadas las iniciativas comunitarias y conoce sus historias.</p><a href="mapa.html" class="button light">Explorar el mapa</a>
         </div>
-        <div class="map-placeholder">MAPA INTERACTIVO
+        <div class="map-placeholder" id="homeMap" role="region" aria-label="Mapa de comunidades">Cargando mapa…
         </div>
       </section>
       <section class="section participate">
@@ -112,7 +135,8 @@
       </section>
     </main>
     <footer class="footer">
-      <div><strong>Casa Pueblo</strong>
+      <div class="footer-brand"><strong>Casa Pueblo</strong>
+        <p class="footer-title">Iniciativa Latinoamericana y del Caribe de Energías Comunitarias</p>
         <p>Comunidades que encienden su propio camino.</p></div>
       <div class="footer-links">
         <a href="comunidades.html">Comunidades</a>
@@ -121,6 +145,7 @@
         <a href="participar.html">Participa</a>
         <a href="admin/login.html" class="nav-button">Administrar</a></div>
     </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/main.js"></script>
   </body>
 </html>

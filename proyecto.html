@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/extras.css">
-    <title>Iniciativa Latinoamérica y del Caribe de energías comunitarias</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+    <title>El proyecto | Iniciativa Latinoamericana y del Caribe de Energías Comunitarias</title>
   </head>
   <body>
     <header class="navbar">
       <div class="nav-container">
-        <a href="index.html" class="logo">Casa Pueblo<span>COMUNIDADES QUE ENCIENDEN</span></a>
+        <a href="index.html" class="logo">Casa Pueblo<span>ENERGÍAS COMUNITARIAS</span></a>
         <nav class="nav-links">
           <a href="admin/login.html">Administradores</a>
           <a href="comunidades.html">Comunidades</a>
           <a href="mapa.html">Mapa</a>
-          <a href="proyecto.html">El proyecto</a>
+          <a href="proyecto.html" aria-current="page">El proyecto</a>
           <a href="participar.html" class="nav-button">Participa</a>
         </nav>
         <button class="menu-button" aria-label="Abrir menú">☰</button>
@@ -23,13 +25,23 @@
     </header>
     <header class="page-header">
       <div class="container">
-        <p class="eyebrow">INICIATIVA LATINOAMÉRICA Y DEL CARIBE</p>
+        <p class="eyebrow">INICIATIVA LATINOAMERICANA Y DEL CARIBE</p>
         <h1>Energías comunitarias</h1>
         <p>Comunidades que encienden su propio camino: energía solar y justicia climática.</p>
       </div>
     </header>
+    <nav class="project-nav" aria-label="Secciones de la página">
+      <ul>
+        <li><a href="#que-son">Qué son</a></li>
+        <li><a href="#alcance">Alcance</a></li>
+        <li><a href="#vision">Visión</a></li>
+        <li><a href="#proposito">Propósito</a></li>
+        <li><a href="#categorias">Categorías</a></li>
+        <li><a href="#principios">Principios</a></li>
+      </ul>
+    </nav>
     <main class="section">
-      <section class="project-section" data-section-key="what_is">
+      <section class="project-section" id="que-son" data-section-key="what_is">
         <div class="content-block">
           <p class="eyebrow">QUÉ SON LAS ENERGÍAS COMUNITARIAS</p>
           <h2>La energía en manos de las comunidades.</h2>
@@ -46,7 +58,7 @@
           <li>Replicabilidad</li>
         </ul>
       </section>
-      <section class="project-section" data-section-key="scope">
+      <section class="project-section" id="alcance" data-section-key="scope">
         <p class="eyebrow">ALCANCE</p>
         <h2>Distintas formas de responder a prioridades colectivas.</h2>
         <div class="project-grid">
@@ -65,7 +77,7 @@
         </div>
         <p class="project-note">En conjunto, estas propuestas muestran distintas posibilidades de utilizar la energía para fortalecer la autonomía y el bienestar comunitario.</p>
       </section>
-      <section class="project-section" data-section-key="vision">
+      <section class="project-section" id="vision" data-section-key="vision">
         <div class="content-block">
           <p class="eyebrow">VISIÓN</p>
           <h2>Una transición energética que repare deudas históricas.</h2>
@@ -73,7 +85,7 @@
           <p>Los territorios que menos energía han recibido y que más han cargado con los costos de la extracción pasan a liderar el cambio. La transición energética repara deudas históricas en lugar de repetirlas.</p>
         </div>
       </section>
-      <section class="project-section" data-section-key="purpose">
+      <section class="project-section" id="proposito" data-section-key="purpose">
         <p class="eyebrow">PROPÓSITO</p>
         <h2>Visibilizar e impulsar la democratización de la energía.</h2>
         <div class="project-grid">
@@ -87,7 +99,7 @@
           </article>
         </div>
       </section>
-      <section class="project-section" data-section-key="categories" data-note-first>
+      <section class="project-section" id="categorias" data-section-key="categories" data-note-first>
         <p class="eyebrow">CATEGORÍAS</p>
         <h2>Criterios para seleccionar y contar las experiencias.</h2>
         <p class="project-note">Cinco categorías guían qué experiencias entran en el proyecto y cómo se cuentan. Según el marco de selección del equipo, se asigna 1 si el esfuerzo cumple el criterio y 0 si no lo cumple o no hay información.</p>
@@ -114,7 +126,7 @@
           </article>
         </div>
       </section>
-      <section class="project-section" data-section-key="guiding_principles" data-note-first>
+      <section class="project-section" id="principios" data-section-key="guiding_principles" data-note-first>
         <p class="eyebrow">PRINCIPIOS DE TRABAJO</p>
         <h2>Cómo nos relacionamos y contamos cada historia.</h2>
         <p class="project-note">Cinco principios orientan el trabajo del proyecto con cada comunidad.</p>
@@ -144,7 +156,8 @@
       <p class="project-closing">¡Comunidades y territorios distintos · Un mismo sol!</p>
     </main>
     <footer class="footer">
-      <div><strong>Casa Pueblo</strong>
+      <div class="footer-brand"><strong>Casa Pueblo</strong>
+        <p class="footer-title">Iniciativa Latinoamericana y del Caribe de Energías Comunitarias</p>
         <p>Comunidades que encienden su propio camino.</p></div>
       <div class="footer-links">
         <a href="comunidades.html">Comunidades</a>

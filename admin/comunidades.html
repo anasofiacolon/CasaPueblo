@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="../css/extras.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
     <title>Comunidades | Administración</title>
   </head>
   <body class="admin-body">
@@ -46,7 +48,7 @@
         </div>
         <section style="margin-top:25px" class="admin-card">
           <h2 style="font-size:1.5rem">Información del proyecto</h2>
-          <p style="margin:10px 0 20px">Edita la misión, visión, propósito y principios que aparecen en la página pública.</p><button class="button">Editar contenido</button>
+          <p style="margin:10px 0 20px">Edita la misión, visión, propósito y principios que aparecen en la página pública.</p><button class="button" type="button" id="editProject">Editar contenido</button>
         </section>
       </main>
     </div>
@@ -92,6 +94,31 @@
             </div>
           </fieldset>
           <div class="modal-actions"><button type="button" class="button danger" id="deleteCommunity" hidden>Eliminar</button><button type="button" class="button secondary" id="cancelCommunityModal">Cancelar</button><button type="submit" class="button primary" id="saveCommunity">Guardar</button>
+      </div>
+        </form></div>
+    </div>
+    <!-- MODAL: información del proyecto -->
+    <div class="modal-overlay" id="projectModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle"><button class="modal-close" id="closeProjectModal" type="button" aria-label="Cerrar">×</button>
+        <p class="eyebrow">PÁGINA "EL PROYECTO"</p>
+        <h2 id="projectModalTitle">Editar contenido</h2>
+        <p class="modal-description">Elige una sección, cambia sus textos y guarda. Los cambios aparecen de inmediato en la página pública.</p>
+        <form id="projectForm">
+          <div class="form-message" id="projectMessage" role="status" hidden></div>
+          <div class="form-group"><label for="p_section">Sección</label><select id="p_section"></select></div>
+          <div class="form-row">
+            <div class="form-group"><label for="p_eyebrow">Etiqueta superior</label><input id="p_eyebrow" maxlength="120" placeholder="VISIÓN"></div>
+            <div class="form-group"><label for="p_title">Título *</label><input id="p_title" maxlength="300" required></div>
+          </div>
+          <div class="form-group"><label for="p_paragraphs">Párrafos</label><textarea id="p_paragraphs" rows="6"></textarea><small class="field-hint">Deja una línea en blanco entre un párrafo y el siguiente.</small></div>
+          <div class="form-group"><label for="p_note">Nota</label><textarea id="p_note" rows="3"></textarea><small class="field-hint">Texto breve que acompaña a las tarjetas.</small></div>
+          <p class="editor-section-title">Tarjetas</p>
+          <div class="card-editor" id="p_cards"></div>
+          <button type="button" class="small-button" id="addCard">+ Añadir tarjeta</button>
+          <p class="editor-section-title">Lista de etiquetas</p>
+          <div class="form-group"><label for="p_list_title">Título de la lista</label><input id="p_list_title" maxlength="200"></div>
+          <div class="form-group"><label for="p_list">Elementos</label><textarea id="p_list" rows="4"></textarea><small class="field-hint">Un elemento por línea.</small></div>
+          <div class="modal-actions"><a class="button secondary" href="../proyecto.html" target="_blank" rel="noopener">Ver página</a><button type="button" class="button secondary" id="cancelProjectModal">Cerrar</button><button type="submit" class="button primary" id="saveProject">Guardar sección</button>
       </div>
         </form></div>
     </div>
@@ -207,6 +234,123 @@ document.getElementById("cancelCommunityModal").addEventListener("click", closeM
 modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
 
 load();
+
+// ---------- Información del proyecto ----------
+const projectModal = document.getElementById("projectModal");
+const projectForm = document.getElementById("projectForm");
+const projectMessage = document.getElementById("projectMessage");
+const sectionSelect = document.getElementById("p_section");
+const cardsBox = document.getElementById("p_cards");
+const pField = id => document.getElementById(id);
+const SECTION_LABELS = {
+    what_is: "Qué son las energías comunitarias",
+    scope: "Alcance",
+    vision: "Visión",
+    purpose: "Propósito",
+    categories: "Categorías",
+    guiding_principles: "Principios de trabajo"
+};
+let sections = [];
+
+function projectNotice(kind, text) {
+    projectMessage.className = `form-message ${kind}`;
+    projectMessage.textContent = text;
+    projectMessage.hidden = false;
+}
+
+function addCardRow(card = { title: "", text: "" }) {
+    const row = document.createElement("div");
+    row.className = "card-editor-item";
+    row.innerHTML = `
+        <button type="button" class="card-editor-remove">Quitar</button>
+        <div class="form-group"><label>Título de la tarjeta</label><input data-card="title" maxlength="200" required></div>
+        <div class="form-group"><label>Texto</label><textarea data-card="text" maxlength="2000" required></textarea></div>`;
+    row.querySelector('[data-card="title"]').value = card.title;
+    row.querySelector('[data-card="text"]').value = card.text;
+    cardsBox.appendChild(row);
+    return row;
+}
+
+function fillSection(key) {
+    const section = sections.find(s => s.section_key === key);
+    let content = {};
+    try { content = JSON.parse(section.content); } catch { content = { paragraphs: [section.content] }; }
+    pField("p_title").value = section.title;
+    pField("p_eyebrow").value = content.eyebrow ?? "";
+    pField("p_paragraphs").value = (content.paragraphs ?? []).join("\n\n");
+    pField("p_note").value = content.note ?? "";
+    pField("p_list_title").value = content.list_title ?? "";
+    pField("p_list").value = (content.list ?? []).join("\n");
+    cardsBox.innerHTML = "";
+    (content.items ?? []).forEach(addCardRow);
+}
+
+async function openProjectModal() {
+    projectMessage.hidden = true;
+    try {
+        sections = (await api("/api/project-info")).sections;
+    } catch (err) {
+        alert(err.message);
+        return;
+    }
+    const selected = sectionSelect.value;
+    sectionSelect.innerHTML = sections.map(s => `<option value="${esc(s.section_key)}">${esc(SECTION_LABELS[s.section_key] ?? s.section_key)}</option>`).join("");
+    if (sections.some(s => s.section_key === selected)) sectionSelect.value = selected;
+    fillSection(sectionSelect.value);
+    projectModal.classList.add("show");
+    projectModal.setAttribute("aria-hidden", "false");
+    sectionSelect.focus();
+}
+
+function closeProjectModal() {
+    projectModal.classList.remove("show");
+    projectModal.setAttribute("aria-hidden", "true");
+}
+
+sectionSelect.addEventListener("change", () => {
+    projectMessage.hidden = true;
+    fillSection(sectionSelect.value);
+});
+
+document.getElementById("addCard").addEventListener("click", () => addCardRow().querySelector("input").focus());
+cardsBox.addEventListener("click", event => {
+    if (event.target.classList.contains("card-editor-remove")) event.target.closest(".card-editor-item").remove();
+});
+
+projectForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const lines = (value, separator) => value.split(separator).map(t => t.trim()).filter(Boolean);
+    const content = {
+        eyebrow: pField("p_eyebrow").value.trim(),
+        paragraphs: lines(pField("p_paragraphs").value, /\n\s*\n/),
+        note: pField("p_note").value.trim(),
+        list_title: pField("p_list_title").value.trim(),
+        list: lines(pField("p_list").value, /\n/),
+        items: [...cardsBox.querySelectorAll(".card-editor-item")].map(row => ({
+            title: row.querySelector('[data-card="title"]').value.trim(),
+            text: row.querySelector('[data-card="text"]').value.trim()
+        }))
+    };
+    const button = document.getElementById("saveProject");
+    button.disabled = true;
+    try {
+        const { section } = await api(`/api/admin/project-info/${encodeURIComponent(sectionSelect.value)}`, {
+            method: "PUT",
+            body: { title: pField("p_title").value.trim(), content }
+        });
+        Object.assign(sections.find(s => s.section_key === section.section_key), section);
+        projectNotice("success", "Sección guardada. Ya está visible en la página pública.");
+    } catch (err) {
+        projectNotice("error", err.message);
+    } finally {
+        button.disabled = false;
+    }
+});
+
+document.getElementById("editProject").addEventListener("click", openProjectModal);
+document.getElementById("closeProjectModal").addEventListener("click", closeProjectModal);
+document.getElementById("cancelProjectModal").addEventListener("click", closeProjectModal);
+projectModal.addEventListener("click", event => { if (event.target === projectModal) closeProjectModal(); });
     </script>
   </body>
 </html>

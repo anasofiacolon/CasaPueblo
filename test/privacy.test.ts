@@ -175,6 +175,45 @@ describe('public serializer', () => {
   });
 });
 
+describe('project information editor', () => {
+  const put = (key: string, json: unknown, c: string | undefined = cookie) => request(`/api/admin/project-info/${key}`, { method: 'PUT', json, cookie: c });
+  const section = async (key: string) => ((await (await request('/api/project-info')).json()) as any).sections.find((s: any) => s.section_key === key);
+
+  it('requires a session', async () => {
+    expect((await put('vision', { title: 'x' }, '')).status).toBe(401);
+  });
+
+  it('saves the title and structured content, and the public page data reflects it', async () => {
+    const res = await put('vision', {
+      title: '  Una visión editada  ',
+      content: { eyebrow: 'VISIÓN', paragraphs: ['Primer párrafo.', '   ', 'Segundo párrafo.'], items: [{ title: 'Tarjeta', text: 'Texto' }], desconocido: 'se descarta' },
+    });
+    expect(res.status).toBe(200);
+    const saved = await section('vision');
+    expect(saved.title).toBe('Una visión editada');
+    expect(JSON.parse(saved.content)).toEqual({ eyebrow: 'VISIÓN', paragraphs: ['Primer párrafo.', 'Segundo párrafo.'], items: [{ title: 'Tarjeta', text: 'Texto' }] });
+    const log = await db().prepare("SELECT COUNT(*) AS n FROM audit_logs WHERE entity_type = 'project_info' AND action = 'update'").first<{ n: number }>();
+    expect(log!.n).toBeGreaterThan(0);
+  });
+
+  it('rejects malformed or empty content and unknown sections, leaving the section untouched', async () => {
+    const before = await section('scope');
+    const bad: unknown[] = [
+      { content: 'no es json' },
+      { content: [] },
+      { content: {} },
+      { content: { paragraphs: 'texto suelto' } },
+      { content: { items: [{ title: 'Sin texto' }] } },
+      { content: { items: 'x' } },
+      { content: { paragraphs: [5] } },
+      { title: '   ' },
+    ];
+    for (const body of bad) expect((await put('scope', body)).status, JSON.stringify(body)).toBe(400);
+    expect(await section('scope')).toEqual(before);
+    expect((await put('no-existe', { title: 'x' })).status).toBe(404);
+  });
+});
+
 describe('seed data', () => {
   it('contains the six workbook communities and the project information sections', async () => {
     const { results } = await db().prepare("SELECT name FROM communities WHERE sync_source = 'seed' ORDER BY name").all<{ name: string }>();
