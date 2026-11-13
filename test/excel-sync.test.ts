@@ -34,18 +34,48 @@ describe('decide(): three-way hash comparison', () => {
 });
 
 describe('normalizer', () => {
-  it('maps headers ignoring case/accents and turns blank locations into NULL', async () => {
+  it('reads the workbook layout: real headers, blank locations as NULL, per-tab location meaning', async () => {
     const { rows, skipped } = normalizeSheets(await new TemplateFixtureExcelAdapter().fetchSheets());
     expect(skipped).toEqual([]);
-    expect(rows.map((r) => r.source_key)).toEqual(['pr:comunidad-de-ejemplo', 'pr:comunidad-sin-ubicacion', 'al:iniciativa-de-ejemplo', 'otros:aliado-de-ejemplo']);
-    expect(rows[0]).toMatchObject({ region: 'Puerto Rico', proposals_tags: 'Solar;Microredes', junte_energetico: 1, contact_email: 'contacto@example.org' });
-    expect(rows[1]).toMatchObject({ location_text: null, country: null, latitude: null, longitude: null });
-    expect(rows[3].kind).toBe('ally');
+    const communities = rows.filter((r) => r.kind === 'community');
+    expect(communities.map((r) => r.source_key)).toEqual(['pr:comunidad-de-ejemplo', 'pr:comunidad-sin-ubicacion', 'al:iniciativa-de-ejemplo']);
+    expect(communities[0]).toMatchObject({
+      region: 'Puerto Rico', location_text: 'Adjuntas', country: 'Puerto Rico', proposals_tags: 'Instalación;Comunidades', energy_initiative_details: 'Proyecto Solar',
+      junte_energetico: 1, website_url: 'https://example.org', contact_email: 'contacto@example.org', comments: 'Nota interna de ejemplo.',
+    });
+    expect(communities[1]).toMatchObject({ location_text: null, country: 'Puerto Rico', latitude: null, longitude: null, junte_energetico: 0 });
+    // In "América Latina" the Localización column is the country.
+    expect(communities[2]).toMatchObject({ region: 'América Latina', country: 'Ecuador', location_text: null, junte_energetico: null });
+  });
+
+  it('collects allies from the "Aliados" list inside a community tab and from the Otros tab, merging repeats', async () => {
+    const { rows, skipped } = normalizeSheets(await new TemplateFixtureExcelAdapter().fetchSheets());
+    expect(skipped).toEqual([]);
+    const allies = rows.filter((r) => r.kind === 'ally');
+    expect(allies.map((r) => r.source_key)).toEqual(['aliado:aliado-de-ejemplo', 'aliado:universidad-ejemplo', 'aliado:otro-aliado']);
+    // Listed bare in the first tab and with details in "Otros": one ally, details kept.
+    expect(allies[0]).toMatchObject({ name: 'Aliado de Ejemplo', location_text: 'Puerto Rico', website_url: 'https://aliado.example.org/' });
+  });
+
+  it('treats configured spellings of a name as the same organization', () => {
+    const { rows } = normalizeSheets([
+      { name: 'Puerto Rico', rows: [{ Junte: 'Aliados' }, { Junte: 'University of Puerto Rico' }] },
+      { name: 'Otros', rows: [{ Aliados: 'UPR', Lugar: 'Puerto Rico' }] },
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ name: 'University of Puerto Rico', source_key: 'aliado:university-of-puerto-rico', location_text: 'Puerto Rico' });
+  });
+
+  it('a stray single-cell row is reported, not imported, unless it follows the Aliados heading', () => {
+    const { rows, skipped } = normalizeSheets([{ name: 'Puerto Rico', rows: [{ Junte: 'Sí' }, { 'Energías Comunitaria': 'Real' }] }]);
+    expect(rows.map((r) => r.name)).toEqual(['Real']);
+    expect(skipped).toEqual([{ sheet: 'Puerto Rico', row: 1, reason: 'missing_name' }]);
   });
 
   it('drops invalid, partial and (0, 0) coordinates', () => {
     const sheet = (row: Record<string, unknown>) => normalizeSheets([{ name: 'puerto rico', rows: [{ NOMBRE: 'A', ...row }] }]).rows[0];
     expect(sheet({ Latitud: '18,16', Longitud: '-66.72' })).toMatchObject({ latitude: 18.16, longitude: -66.72 });
+    expect(sheet({})).toMatchObject({ latitude: null, longitude: null });
     expect(sheet({ Latitud: 0, Longitud: 0 })).toMatchObject({ latitude: null, longitude: null });
     expect(sheet({ Latitud: 18.1 })).toMatchObject({ latitude: null, longitude: null });
     expect(sheet({ Latitud: 123, Longitud: 5 })).toMatchObject({ latitude: null, longitude: null });
@@ -67,6 +97,8 @@ describe('normalizer', () => {
     expect(await hashTrackedFields(a)).toMatch(/^[0-9a-f]{64}$/);
     expect(await hashTrackedFields(a)).toBe(await hashTrackedFields(b));
     expect(await hashTrackedFields(a)).not.toBe(await hashTrackedFields(c));
+    // Coordinates are not a workbook column, so they do not take part in change tracking.
+    expect(await hashTrackedFields({ ...a, latitude: 18.1, longitude: -66.7 })).toBe(await hashTrackedFields(a));
   });
 
   it('accepts 2D arrays with a header row and the object-of-sheets shape', () => {
@@ -169,7 +201,7 @@ describe('POST /api/sync/excel (one-way Excel -> DB)', () => {
       json: {
         sheets: [
           { name: 'Puerto Rico', rows: [row({ Descripción: 'Versión 3' }), { Nombre: 'Comunidad Toro Negro', Descripción: 'Texto real del Excel' }] },
-          { name: 'Otros', rows: [{ Nombre: 'Aliado Uno', 'Página web': 'https://aliado.example' }] },
+          { name: 'Otros', rows: [{ Aliados: 'Aliado Uno', Website: 'https://aliado.example' }] },
         ],
       },
       cookie,
@@ -180,6 +212,30 @@ describe('POST /api/sync/excel (one-way Excel -> DB)', () => {
     expect(toro).toMatchObject({ description: 'Texto real del Excel', slug: 'comunidad-toro-negro', is_visible: 1, show_location: 0 });
     const allies = ((await (await request('/api/allies')).json()) as any).allies;
     expect(allies).toEqual([{ name: 'Aliado Uno', location_text: null, website_url: 'https://aliado.example' }]);
+  });
+
+  it('never touches the map coordinates an administrator set, and that edit alone is not a conflict', async () => {
+    const casa = await record('pr:casa-pueblo');
+    expect(casa).toMatchObject({ latitude: 18.1627, longitude: -66.7222, show_on_map: 1 });
+    const rows = [{ 'Energías Comunitaria': 'Casa Pueblo', Localización: 'Adjuntas', Descripción: 'Texto del Excel' }];
+    expect(await decisionOf(await sync(rows), 'pr:casa-pueblo')).toBe('updated_in_excel');
+    expect(await record('pr:casa-pueblo')).toMatchObject({ description: 'Texto del Excel', location_text: 'Adjuntas', country: 'Puerto Rico', latitude: 18.1627, longitude: -66.7222, show_on_map: 1 });
+
+    // Moving the pin in the portal is not a content edit of a workbook field...
+    expect((await request(`/api/admin/communities/${casa.id}`, { method: 'PUT', json: { latitude: 18.2, longitude: -66.8 }, cookie })).status).toBe(200);
+    // ...so a later Excel change still applies cleanly and the new pin stays.
+    rows[0].Descripción = 'Texto del Excel v2';
+    expect(await decisionOf(await sync(rows), 'pr:casa-pueblo')).toBe('updated_in_excel');
+    expect(await record('pr:casa-pueblo')).toMatchObject({ description: 'Texto del Excel v2', latitude: 18.2, longitude: -66.8 });
+  });
+
+  it('toggling visibility on a seeded community does not block its first sync', async () => {
+    const before = await record('al:fundacion-kara-solar');
+    expect((await request(`/api/admin/communities/${before.id}`, { method: 'PUT', json: { is_visible: false, show_location: true }, cookie })).status).toBe(200);
+    expect((await record('al:fundacion-kara-solar')).current_db_hash).toBeNull();
+    const res = await request('/api/sync/excel', { json: { sheets: [{ name: 'América Latina', rows: [{ 'Energías Comunitaria': 'Fundación Kara Solar', Localización: 'Ecuador', Descripción: 'Del Excel' }] }] }, cookie });
+    expect(await decisionOf(res, 'al:fundacion-kara-solar')).toBe('updated_in_excel');
+    expect(await record('al:fundacion-kara-solar')).toMatchObject({ description: 'Del Excel', country: 'Ecuador', is_visible: 0, show_location: 1 });
   });
 
   it('records each import in audit_logs and rejects malformed payloads', async () => {

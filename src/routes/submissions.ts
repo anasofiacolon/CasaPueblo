@@ -78,7 +78,8 @@ export async function listSubmissions({ env, url }: Ctx): Promise<Response> {
     binds.push(status);
   }
   if (q) {
-    where.push("community_name LIKE '%' || ? || '%'");
+    // instr() instead of LIKE: D1 rejects LIKE patterns longer than 50 bytes.
+    where.push('instr(lower(community_name), lower(?)) > 0');
     binds.push(q);
   }
   const { results } = await env.DB.prepare(

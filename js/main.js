@@ -6,7 +6,6 @@
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[c]);
-  const plain = (text) => String(text ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
   async function api(path, options) {
     const res = await fetch(path, options);
@@ -50,8 +49,8 @@
   // ---------- comunidades.html: full list + filters ----------
   async function directory(grid) {
     let list = [];
-    const render = (keyword) => {
-      const shown = keyword ? list.filter((c) => plain([c.tags.join(' '), c.description, c.energy_initiative_details].join(' ')).includes(keyword)) : list;
+    const render = (tag) => {
+      const shown = tag ? list.filter((c) => c.tags.includes(tag)) : list;
       grid.innerHTML = shown.length ? shown.map((c) => communityCard(c, 'Ver perfil')).join('') : message('No hay comunidades publicadas en esta categoría.');
     };
     try {
@@ -61,15 +60,16 @@
       grid.innerHTML = message('No pudimos cargar las comunidades. Intenta de nuevo más tarde.');
       return;
     }
-    // "Todas" has no keyword; the other buttons match their label against tags and descriptions.
-    const keywords = { todas: '', solar: 'solar', microredes: 'microred', 'autonomia energetica': 'autonom' };
-    document.querySelectorAll('.filters .filter').forEach((button) =>
-      button.addEventListener('click', () => {
-        document.querySelectorAll('.filters .filter').forEach((b) => b.classList.toggle('active', b === button));
-        const label = plain(button.textContent.trim());
-        render(keywords[label] ?? label);
-      }),
-    );
+    // The filter buttons are built from the tags ("Propuestas") the published communities actually use.
+    const filters = document.querySelector('.filters');
+    const tags = [...new Set(list.flatMap((c) => c.tags))].sort((a, b) => a.localeCompare(b, 'es'));
+    filters.innerHTML = ['Todas', ...tags].map((t, i) => `<button class="filter${i === 0 ? ' active' : ''}" type="button" data-tag="${i === 0 ? '' : esc(t)}">${esc(t)}</button>`).join('');
+    filters.addEventListener('click', (event) => {
+      const button = event.target.closest('.filter');
+      if (!button) return;
+      filters.querySelectorAll('.filter').forEach((b) => b.classList.toggle('active', b === button));
+      render(button.dataset.tag);
+    });
   }
 
   // ---------- comunidad.html: profile ----------

@@ -26,7 +26,8 @@ npm run dev       # http://localhost:8787
 | `npm test` | Pruebas (Vitest dentro de workerd, con una D1 real en memoria) |
 | `npm run typecheck` | Verificación de tipos de `src/` |
 | `npm run db:migrate` | Aplica migraciones a la D1 local |
-| `npm run seed` | Crea el administrador local (idempotente; `-- --reset` cambia la contraseña) |
+| `npm run seed` | Crea el administrador local y los secretos de `.dev.vars` (idempotente; `-- --reset` cambia la contraseña) |
+| `npm run sync:excel` | Compara el libro de `private/` con la base de datos (simulación; `-- --apply` escribe) |
 
 Para empezar de cero en local: borra `.wrangler/` y corre `npm run setup`.
 
@@ -128,30 +129,52 @@ Casa Pueblo mantiene su propio libro de Excel (`Mapeo Inicial_CP2.xlsx`, pestañ
 | `conflict_both_modified` | Cambiaron los dos | No se sobrescribe; queda en `audit_logs` (`excel_conflict`) para revisión |
 | `new_from_excel` | No existe en la base de datos | Se inserta **oculto** (`is_visible = 0`) hasta que un administrador lo publique |
 
-La sincronización solo cambia columnas de contenido; nunca toca los interruptores de visibilidad. Las filas que desaparecen del Excel no se borran: se reportan en `missing_in_excel`. Las seis comunidades sembradas adoptan los valores del Excel en su primera sincronización, salvo que un administrador las haya editado antes (eso sería un conflicto).
+La sincronización solo cambia las columnas que vienen del libro (`trackedFields`). Nunca toca los interruptores de visibilidad ni las coordenadas del mapa: el libro no tiene columnas de latitud/longitud, así que los marcadores se administran desde el portal. Las filas que desaparecen del Excel no se borran: se reportan en `missing_in_excel`. Las seis comunidades sembradas adoptan los valores del Excel en su primera sincronización, salvo que un administrador haya editado su contenido antes (eso sería un conflicto).
 
-Probar sin escribir nada (`dry_run`):
+### Cómo se lee el libro
+
+| Pestaña | Columnas | Destino |
+| --- | --- | --- |
+| `Puerto Rico` | Junte - Transición Energética · Energías Comunitaria · Localización · Descripción · Propuestas · Proyectos · Website · Contacto · Comentarios | `communities` (región Puerto Rico; Localización es el municipio) |
+| `Puerto Rico`, al final | El encabezado `Aliados` seguido de un nombre por fila | `allies` |
+| `América Latina` | Las mismas columnas sin "Junte" | `communities` (región América Latina; Localización es el **país**) |
+| `Otros` | Aliados · Lugar · Website | `allies` |
+
+- **Proyectos** se guarda en `energy_initiative_details`, **Propuestas** en `proposals_tags` (los filtros de `comunidades.html` se generan a partir de estas etiquetas).
+- **Contacto** y **Comentarios** se guardan como privados (`private_contact_email`, `private_comments`) y no se publican.
+- Un aliado repetido en dos pestañas es un solo aliado. `UPR` y `University of Puerto Rico` se tratan como el mismo (`nameAliases`).
+- Los encabezados se comparan sin distinguir mayúsculas, acentos ni espacios. Si Casa Pueblo renombra una columna, se añade el alias en `DEFAULT_SYNC_CONFIG` (`src/lib/excel-sync/normalizer.ts`).
+
+### Cargar el libro
+
+El libro vive en `private/` (ignorada por git y no accesible desde el sitio). `scripts/sync-excel.mjs` lo abre en modo de solo lectura, sin dependencias externas, y envía sus filas a `/api/sync/excel`.
 
 ```bash
-curl -X POST http://localhost:8787/api/sync/excel \
-  -H 'content-type: application/json' -H 'authorization: Bearer <SYNC_TOKEN>' \
-  -d '{"dry_run": true, "sheets": [{"name": "Puerto Rico", "rows": [{"Nombre": "Ejemplo", "Ubicación": "", "Descripción": "..."}]}]}'
+# Local (con `npm run dev` corriendo en otra terminal)
+npm run sync:excel              # simulación: muestra qué cambiaría, no escribe
+npm run sync:excel -- --apply   # actualiza la base de datos local
+
+# Producción (el token es el guardado con `npx wrangler secret put SYNC_TOKEN`)
+SYNC_TOKEN=... npm run sync:excel -- --url https://<worker>.workers.dev            # simulación
+SYNC_TOKEN=... npm run sync:excel -- --url https://<worker>.workers.dev --apply
 ```
 
-El código es genérico mientras se confirman los detalles del libro con Casa Pueblo (`src/lib/excel-sync/`):
+El comando imprime solo nombres y decisiones, nunca correos ni notas. Se puede repetir cada vez que Casa Pueblo actualice el libro: las filas sin cambios se omiten.
 
-- `normalizer.ts` — pestañas y **alias de columnas** (`DEFAULT_SYNC_CONFIG`). Si una columna tiene otro nombre en el libro real, se añade aquí.
+El código de la sincronización (`src/lib/excel-sync/`):
+
+- `normalizer.ts` — configuración del libro (`DEFAULT_SYNC_CONFIG`) y normalización de filas.
 - `change-tracker.ts` — `reconcileSheetsWithBaselines()`, la comparación de hashes, sin acceso a red ni a la base de datos.
-- `adapters.ts` — fuentes de solo lectura: `PushPayloadExcelAdapter` (Power Query, Power Automate o carga desde el navegador), `HostedJsonFeedAdapter` (variable `EXCEL_FEED_URL`), `MicrosoftGraphReadOnlyWorkbookAdapter` (OneDrive/SharePoint; todavía no conectado a una ruta) y `TemplateFixtureExcelAdapter` (pruebas).
-- `docs/power-query-template.pq` — plantilla para enviar el libro desde Excel. **No se ha probado contra el libro real.**
+- `adapters.ts` — fuentes de solo lectura: `PushPayloadExcelAdapter` (el script anterior, Power Query o Power Automate), `HostedJsonFeedAdapter` (variable `EXCEL_FEED_URL`), `MicrosoftGraphReadOnlyWorkbookAdapter` (OneDrive/SharePoint; todavía no conectado a una ruta) y `TemplateFixtureExcelAdapter` (un libro inventado con el mismo formato, para pruebas).
+- `docs/power-query-template.pq` — plantilla para enviar el libro desde Excel. **No se ha probado todavía.**
 
 ## Datos iniciales
 
-`migrations/0002_seed.sql` siembra las seis comunidades nombradas en el libro de Casa Pueblo y el contenido de `proyecto.html`.
+`migrations/0002_seed.sql` siembra seis comunidades del libro de Casa Pueblo y el contenido de `proyecto.html`. El repositorio es público, así que la migración solo contiene eso; el resto de la información entra con `npm run sync:excel`.
 
-- **Los textos de las comunidades son borradores** escritos sin acceso al libro; se reemplazan en la primera sincronización con Excel o desde el portal.
-- Siguiendo la regla de privacidad, solo Casa Pueblo aparece con ubicación y en el mapa. Las otras cinco tienen la ubicación oculta hasta que se autorice.
-- **Los aliados (pestaña `Otros`) no están sembrados**: entran por `/api/sync/excel`.
+- **Los textos sembrados son borradores.** La primera sincronización los reemplaza con los del libro y añade las demás comunidades y los aliados.
+- Las comunidades nuevas que llegan del libro entran **ocultas**; un administrador las publica desde el portal.
+- Siguiendo la regla de privacidad, solo Casa Pueblo aparece con ubicación y en el mapa. Las demás tienen la ubicación oculta hasta que se autorice.
 
 ## Pendiente para próximos sprints
 

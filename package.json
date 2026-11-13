@@ -12,6 +12,7 @@
     "seed": "node scripts/seed-admin.mjs --local",
     "seed:remote": "node scripts/seed-admin.mjs --remote",
     "setup": "npm run db:migrate && npm run seed",
+    "sync:excel": "node scripts/sync-excel.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

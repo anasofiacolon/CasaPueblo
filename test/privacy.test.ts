@@ -152,6 +152,20 @@ describe('public serializer', () => {
     expect((await publicList()).map((c) => c.name)).not.toContain('Temporal');
   });
 
+  it('handles long names and gives repeated names distinct slugs', async () => {
+    const name = 'Asociación Comunitaria de Energía Renovable y Solar del Barrio de Ejemplo (ACERSBE)';
+    const slugs: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      const res = await request('/api/admin/communities', { json: { name, description: 'd', energy_initiative_details: 'e' }, cookie });
+      expect(res.status).toBe(201);
+      slugs.push(((await res.json()) as any).community.slug);
+    }
+    const base = 'asociacion-comunitaria-de-energia-renovable-y-solar-del-barrio-de-ejemplo-acersbe';
+    expect(slugs).toEqual([base, `${base}-2`, `${base}-3`]);
+    // The search box in the admin portal must also accept long text.
+    expect((await request(`/api/admin/submissions?q=${encodeURIComponent(name)}`, { cookie })).status).toBe(200);
+  });
+
   it('new communities created by an admin keep location and contact hidden by default', async () => {
     const created = ((await (await request('/api/admin/communities', {
       json: { name: 'Nueva Admin', description: 'd', energy_initiative_details: 'e', location_text: 'Lugar', private_contact_email: 'a@b.co' },

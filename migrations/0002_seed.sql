@@ -3,14 +3,11 @@
 -- The administrator account is NOT seeded here: a password hash must never be
 -- committed to the repo. Run `npm run seed` (scripts/seed-admin.mjs) instead.
 --
--- Communities: the six organizations named in Casa Pueblo's workbook
--- (Mapeo Inicial_CP2.xlsx). The descriptive text below is a DRAFT written
--- without access to the workbook; the first Excel sync replaces it
--- (sync_source = 'seed' rows adopt the Excel values). Locations are hidden by
--- default; only Casa Pueblo itself is published on the map.
---
--- Allies ('Otros' tab): intentionally not seeded here. They are ingested from
--- the workbook through /api/sync/excel.
+-- Communities: six organizations from Casa Pueblo's workbook, with DRAFT text.
+-- This repository is public, so nothing else from the workbook is stored here.
+-- `npm run sync:excel` loads the real content, the remaining communities and the
+-- allies from the private copy of the workbook (seed rows adopt the Excel values).
+-- Locations are hidden by default; only Casa Pueblo itself is published on the map.
 
 INSERT OR IGNORE INTO communities (source_key, name, slug, region, location_text, country, latitude, longitude, description, energy_initiative_details, proposals_tags, website_url, is_visible, show_location, show_on_map, sync_source, source_sheet)
 VALUES ('pr:casa-pueblo', 'Casa Pueblo', 'casa-pueblo', 'Puerto Rico', 'Adjuntas, Puerto Rico', 'Puerto Rico', 18.1627, -66.7222, 'Organización de autogestión comunitaria de Adjuntas que promueve la protección de los recursos naturales, culturales y humanos.', 'Impulsa la insurrección energética con energía solar: su sede opera con energía solar y acompaña a hogares, comercios y espacios comunitarios de Adjuntas en su transición hacia la autosuficiencia energética.', 'Solar;Microredes;Autonomía energética', 'https://casapueblo.org', 1, 1, 1, 'seed', 'Puerto Rico');

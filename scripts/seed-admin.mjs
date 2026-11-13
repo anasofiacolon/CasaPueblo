@@ -9,7 +9,7 @@
 // same PBKDF2-SHA256 format the Worker verifies; only the hash reaches the DB.
 import { execFileSync } from 'node:child_process';
 import { randomBytes, webcrypto } from 'node:crypto';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,10 +45,16 @@ const sql = `INSERT INTO administrators (username, password_hash, full_name, ema
 VALUES (${q(username)}, ${q(hash)}, ${q(fullName)}, ${q(email)})
 ON CONFLICT(username) ${onConflict};\n`;
 
-// Local development also needs a JWT secret; generate one once.
-if (!remote && !existsSync(join(root, '.dev.vars'))) {
-  writeFileSync(join(root, '.dev.vars'), `JWT_SECRET=${randomBytes(32).toString('hex')}\n`, { mode: 0o600 });
-  console.log('Created .dev.vars with a random JWT_SECRET (git-ignored).');
+// Local development needs its own secrets; generate each one once (.dev.vars is git-ignored).
+if (!remote) {
+  const devVars = join(root, '.dev.vars');
+  if (!existsSync(devVars)) writeFileSync(devVars, '', { mode: 0o600 });
+  for (const name of ['JWT_SECRET', 'SYNC_TOKEN']) {
+    const current = readFileSync(devVars, 'utf8');
+    if (new RegExp(`^${name}=.+$`, 'm').test(current)) continue;
+    appendFileSync(devVars, `${current === '' || current.endsWith('\n') ? '' : '\n'}${name}=${randomBytes(32).toString('hex')}\n`);
+    console.log(`Added a random ${name} to .dev.vars.`);
+  }
 }
 
 const dir = mkdtempSync(join(tmpdir(), 'cp-seed-'));

@@ -124,8 +124,11 @@ export async function updateCommunity(ctx: Ctx): Promise<Response> {
   const admin = ctx.admin!;
   const current = await loadCommunity(ctx);
   const c = mergeEditable(current, await readJsonObject(request));
-  // current_db_hash is how the next Excel sync knows the Admin Portal changed this record.
-  const hash = await communityDbHash(c);
+  // current_db_hash is how the next Excel sync knows the Admin Portal changed this record's
+  // content. It only moves when a workbook-tracked field changed: toggling visibility or
+  // moving the map pin must not make the record look edited.
+  const contentChanged = (await communityDbHash(c)) !== (await communityDbHash(current));
+  const hash = contentChanged ? await communityDbHash(c) : current.current_db_hash;
   const before = Object.fromEntries(COLUMNS.filter((k) => current[k] !== c[k]).map((k) => [k, current[k]]));
   const after = Object.fromEntries(COLUMNS.filter((k) => current[k] !== c[k]).map((k) => [k, c[k]]));
   await env.DB.batch([

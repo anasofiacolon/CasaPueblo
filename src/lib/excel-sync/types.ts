@@ -18,6 +18,10 @@ export interface SheetConfig {
   keyPrefix: string;
   /** Stored in communities.region; null for allies. */
   region: string | null;
+  /** Header aliases that apply only to this tab (e.g. where "Localización" holds a country). */
+  columns?: Partial<ColumnMapping>;
+  /** Values used when the tab has no column for a field (e.g. country = 'Puerto Rico'). */
+  defaults?: Partial<Pick<TrackedFields, 'country' | 'location_text'>>;
 }
 
 export type CommunityField =
@@ -40,6 +44,19 @@ export type ColumnMapping = Record<CommunityField, string[]>;
 export interface SyncConfig {
   sheets: SheetConfig[];
   columns: ColumnMapping;
+  /**
+   * The fields the workbook is the source for. Only these are hashed and only
+   * these are overwritten by a sync; everything else (coordinates, when the
+   * workbook has no such columns) belongs to the Admin Portal.
+   * Changing this list changes every hash, so the next sync re-evaluates all rows.
+   */
+  trackedFields: CommunityField[];
+  /** A community tab may end with a list of allies under a heading cell such as "Aliados". */
+  allySectionMarkers: string[];
+  /** Prefix of the source_key of every ally, whichever tab it comes from. */
+  allyKeyPrefix: string;
+  /** Alternative spellings of the same organization -> the name to store. */
+  nameAliases: Record<string, string>;
 }
 
 /** The fields that take part in change tracking, for both an Excel row and a DB row. */

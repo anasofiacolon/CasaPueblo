@@ -8,6 +8,7 @@ import {
   normalizeSheets,
   reconcileSheetsWithBaselines,
   type Baseline,
+  type CommunityField,
   type ExcelSourceAdapter,
   type NormalizedRow,
   type RowOutcome,
@@ -56,8 +57,15 @@ async function loadBaselines(env: Env): Promise<Baseline[]> {
   return [...communities.results.map((b) => ({ ...b, kind: 'community' as const })), ...allies.results.map((b) => ({ ...b, kind: 'ally' as const }))];
 }
 
-const COMMUNITY_SET = `name = ?, region = ?, location_text = ?, country = ?, latitude = ?, longitude = ?, description = ?,
-  energy_initiative_details = ?, proposals_tags = ?, junte_energetico = ?, website_url = ?, private_contact_email = ?, private_comments = ?`;
+// Excel field -> DB column. A sync only overwrites the fields the workbook is the source for.
+const DB_COLUMN: Record<CommunityField, string> = {
+  name: 'name', location_text: 'location_text', country: 'country', latitude: 'latitude', longitude: 'longitude', description: 'description',
+  energy_initiative_details: 'energy_initiative_details', proposals_tags: 'proposals_tags', junte_energetico: 'junte_energetico',
+  website_url: 'website_url', contact_email: 'private_contact_email', comments: 'private_comments',
+};
+const TRACKED = DEFAULT_SYNC_CONFIG.trackedFields;
+const TRACKED_SET = TRACKED.map((f) => `${DB_COLUMN[f]} = ?`).join(', ');
+const trackedValues = (r: NormalizedRow) => TRACKED.map((f) => r[f]);
 const communityValues = (r: NormalizedRow) => [
   r.name, r.region, r.location_text, r.country, r.latitude, r.longitude, r.description, r.energy_initiative_details,
   r.proposals_tags, r.junte_energetico, r.website_url, r.contact_email, r.comments,
@@ -90,12 +98,12 @@ async function statementsFor(env: Env, o: RowOutcome, adminId: number | null, sl
         ).bind(r.source_key, await uniqueSlug(env, r.name, slugs), ...communityValues(r), r.source_sheet, hash, hash),
       ];
     case 'updated_in_excel':
-      // Only content columns change. Visibility toggles belong to the Admin Portal and are never touched by a sync.
+      // Only the workbook's own columns change. Visibility toggles and map coordinates belong to the Admin Portal.
       return [
         env.DB.prepare(
-          `UPDATE communities SET ${COMMUNITY_SET}, source_key = ?, source_sheet = ?, last_synced_excel_hash = ?, current_db_hash = ?,
+          `UPDATE communities SET ${TRACKED_SET}, region = ?, source_key = ?, source_sheet = ?, last_synced_excel_hash = ?, current_db_hash = ?,
              last_synced_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-        ).bind(...communityValues(r), r.source_key, r.source_sheet, hash, hash, baseline!.id),
+        ).bind(...trackedValues(r), r.region, r.source_key, r.source_sheet, hash, hash, baseline!.id),
         auditStatement(env, { entity_type: 'community', entity_id: baseline!.id, action: 'update', comment: 'excel_sync', new_state: { source_key: r.source_key, incoming_excel_hash: hash }, admin_id: adminId }),
       ];
     case 'unchanged':

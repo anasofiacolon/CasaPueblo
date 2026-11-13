@@ -98,17 +98,25 @@ export class MicrosoftGraphReadOnlyWorkbookAdapter implements ExcelSourceAdapter
   }
 }
 
-/** Placeholder workbook used in tests and demos until the real column layout is confirmed. */
+/**
+ * A made-up workbook with the same layout as Casa Pueblo's (headers, the "Aliados"
+ * list at the bottom of the first tab, an ally repeated across tabs). Used by tests
+ * and demos so the real workbook never needs to be in the repository.
+ */
 export const TEMPLATE_FIXTURE: RawSheet[] = [
   {
     name: 'Puerto Rico',
     rows: [
-      { Nombre: 'Comunidad de Ejemplo', Ubicación: 'Municipio, Puerto Rico', País: 'Puerto Rico', Descripción: 'Descripción de ejemplo.', Propuestas: 'Solar; Microredes', 'Junte Energético': 'Sí', 'Página web': 'https://example.org', Contacto: 'contacto@example.org', Comentarios: 'Nota interna de ejemplo.' },
-      { Nombre: 'Comunidad sin Ubicación', Ubicación: '', Descripción: 'La ubicación en blanco se guarda como NULL.' },
+      { 'Junte - Transición Energética': 'Sí', 'Energías Comunitaria ': 'Comunidad de Ejemplo', 'Localización ': 'Adjuntas', Descripción: 'Descripción de ejemplo.', Propuestas: 'Instalación; Comunidades ', ' Proyectos': 'Proyecto Solar', 'Website ': 'https://example.org ', Contacto: 'contacto@example.org', 'Comentarios ': 'Nota interna de ejemplo.' },
+      { 'Junte - Transición Energética': 'No', 'Energías Comunitaria ': 'Comunidad sin Ubicación', 'Localización ': ' ', Descripción: 'La ubicación en blanco se guarda como NULL.' },
+      {},
+      { 'Junte - Transición Energética': 'Aliados ' },
+      { 'Junte - Transición Energética': 'Aliado de Ejemplo' },
+      { 'Junte - Transición Energética': 'Universidad Ejemplo' },
     ],
   },
-  { name: 'América Latina', rows: [{ Nombre: 'Iniciativa de Ejemplo', País: 'Ecuador', Descripción: 'Descripción de ejemplo.', Propuestas: 'Solar' }] },
-  { name: 'Otros', rows: [{ Nombre: 'Aliado de Ejemplo', Ubicación: 'San Juan, Puerto Rico', 'Página web': 'https://example.org' }] },
+  { name: 'América Latina', rows: [{ 'Energías Comunitaria ': 'Iniciativa de Ejemplo', 'Localización ': 'Ecuador', Descripción: 'Descripción de ejemplo.', Propuestas: 'Transportación ' }] },
+  { name: 'Otros', rows: [{ Aliados: 'Aliado de Ejemplo', Lugar: 'Puerto Rico', Website: 'https://aliado.example.org/ ' }, { Aliados: 'Otro Aliado', Lugar: 'Puerto Rico' }] },
 ];
 
 export class TemplateFixtureExcelAdapter implements ExcelSourceAdapter {

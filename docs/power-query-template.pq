@@ -10,8 +10,9 @@
 //   2. When asked for credentials for SiteUrl choose "Anonymous" (the token travels in the header).
 //   3. Refresh the query to run a sync.
 //
-// STATUS: template. It has not been run against Mapeo Inicial_CP2.xlsx yet; the
-// tab names and the header row below must be confirmed with Casa Pueblo.
+// STATUS: template, not yet run from inside Excel. The server side has been verified
+// against Mapeo Inicial_CP2.xlsx through scripts/sync-excel.mjs, which is the
+// supported way to load the workbook today (`npm run sync:excel`).
 // Column headers are matched on the server (src/lib/excel-sync/normalizer.ts),
 // so renaming a column only requires adding an alias there.
 let

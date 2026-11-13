@@ -85,7 +85,8 @@ export function communityDbHash(c: Pick<CommunityRow, 'name' | 'location_text' |
 /** A slug not used by any community (including soft-deleted ones: the column is UNIQUE). */
 export async function uniqueSlug(env: Env, name: string, taken: Set<string> = new Set()): Promise<string> {
   const base = slugify(name);
-  const { results } = await env.DB.prepare("SELECT slug FROM communities WHERE slug = ?1 OR slug LIKE ?1 || '-%'").bind(base).all<{ slug: string }>();
+  // Not LIKE: D1 rejects LIKE patterns longer than 50 bytes, and names can be longer than that.
+  const { results } = await env.DB.prepare("SELECT slug FROM communities WHERE slug = ?1 OR substr(slug, 1, length(?1) + 1) = ?1 || '-'").bind(base).all<{ slug: string }>();
   const used = new Set([...results.map((r) => r.slug), ...taken]);
   let slug = base;
   for (let n = 2; used.has(slug) || /^comunidad-\d+$/.test(slug); n++) slug = `${base}-${n}`;
