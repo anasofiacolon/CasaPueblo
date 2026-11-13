@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/extras.css">
     <title>Revisión | Casa Pueblo</title>
   </head>
   <body class="admin-body">
@@ -14,40 +15,121 @@
           <a href="submissions.html">Solicitudes</a>
           <a href="submission.html">Revisión</a>
           <a href="comunidades.html">Comunidades</a>
-          <a href="admin/administradores.html">Administradores</a>
+          <a href="administradores.html">Administradores</a>
         </nav>
         <a class="logout" href="login.html">Cerrar sesión</a></aside>
       <main class="admin-main">
         <div class="admin-top">
           <div>
             <p class="eyebrow">REVISIÓN DE SOLICITUD</p>
-            <h1 style="font-size:3rem">Comunidad A</h1>
-          </div><span class="status pending">Pendiente</span>
+            <h1 style="font-size:3rem" id="title">Cargando…</h1>
+          </div><span id="statusBadge"></span>
         </div>
         <div class="detail-grid">
-          <section class="review-card">
-            <div class="review-row"><strong>Nombre de la comunidad</strong>
-              <p>Comunidad A</p></div>
-            <div class="review-row"><strong>Ubicación</strong>
-              <p>Adjuntas, Puerto Rico</p></div>
-            <div class="review-row"><strong>Descripción</strong>
-              <p>Descripción enviada por la comunidad y pendiente de revisión administrativa.</p></div>
-            <div class="review-row"><strong>Iniciativa energética</strong>
-              <p>Información sobre el proyecto, su funcionamiento y participación comunitaria.</p></div>
-            <div class="review-row"><strong>Contacto</strong>
-              <p>contacto@ejemplo.org</p></div>
-            <div class="review-row"><strong>Comentarios</strong>
-              <p>Información adicional proporcionada por la persona que realizó el envío.</p></div>
-            <div class="review-actions"><button class="button primary">Aprobar y publicar</button><button class="button" style="color:var(--danger)">Rechazar</button>
+          <section class="review-card" id="review">
+            <div class="form-message" id="reviewMessage" role="status" hidden></div>
+            <div id="reviewRows"></div>
+            <div class="review-actions" id="reviewActions" hidden><button class="button primary" id="approve" type="button">Aprobar y publicar</button><button class="button" style="color:var(--danger)" id="reject" type="button">Rechazar</button>
       </div>
           </section>
           <aside class="review-card">
             <h2 style="font-size:1.4rem">Historial</h2>
-            <p style="margin-top:12px">06 nov 2026 · Enviada</p>
-            <p>06 nov 2026 · Pendiente de revisión</p>
+            <div id="history" style="margin-top:12px"></div>
           </aside>
         </div>
       </main>
     </div>
+    <script src="../js/admin.js"></script>
+    <script>
+const { api, esc, formatDate, statusBadge } = CPAdmin;
+const rows = document.getElementById("reviewRows");
+const actions = document.getElementById("reviewActions");
+const message = document.getElementById("reviewMessage");
+let id = new URLSearchParams(location.search).get("id");
+
+function showMessage(kind, text) {
+    message.className = `form-message ${kind}`;
+    message.textContent = text;
+    message.hidden = false;
+}
+
+// Each field shows the visibility the submitter chose for it.
+function row(label, value, visible) {
+    const tag = visible === undefined ? "" :
+        `<span class="visibility-tag ${visible ? "public" : "private"}">${visible ? "Autorizado para publicar" : "Privado"}</span>`;
+    const text = value === null || value === "" ? '<span class="muted">No provisto</span>' : esc(value);
+    return `<div class="review-row"><strong>${label}${tag}</strong><p>${text}</p></div>`;
+}
+
+async function load() {
+    if (!id) {
+        // Opened from the sidebar: go to the oldest pending submission.
+        const { submissions } = await api("/api/admin/submissions?status=pending");
+        if (!submissions.length) {
+            document.getElementById("title").textContent = "Sin solicitudes pendientes";
+            rows.innerHTML = '<p class="empty-state">No hay solicitudes por revisar. <a href="submissions.html">Ver todas las solicitudes →</a></p>';
+            return;
+        }
+        id = submissions[submissions.length - 1].id;
+        history.replaceState(null, "", `submission.html?id=${id}`);
+    }
+
+    const { submission: s, history: log, community } = await api(`/api/admin/submissions/${encodeURIComponent(id)}`);
+    document.title = `${s.community_name} | Revisión`;
+    document.getElementById("title").textContent = s.community_name;
+    document.getElementById("statusBadge").innerHTML = statusBadge(s.status);
+
+    const coordinates = s.latitude === null ? null : `${s.latitude}, ${s.longitude}`;
+    rows.innerHTML = [
+        row("Nombre de la comunidad", s.community_name, s.show_community_name),
+        row("Ubicación", s.location_text, s.show_location),
+        coordinates ? row("Coordenadas", coordinates, s.show_location) : "",
+        row("Descripción", s.description, s.show_description),
+        row("Iniciativa energética", s.energy_initiative_details, s.show_energy_initiative_details),
+        row("Contacto", s.submitter_email, s.show_submitter_email),
+        s.submitter_name ? row("Persona de contacto", s.submitter_name, s.show_submitter_name) : "",
+        s.submitter_phone ? row("Teléfono", s.submitter_phone, s.show_submitter_phone) : "",
+        row("Comentarios (siempre privados)", s.submitter_comments),
+        s.status === "rejected" ? row("Motivo del rechazo", s.rejection_comment) : "",
+        community ? `<div class="review-row"><strong>Perfil publicado</strong><p><a href="comunidades.html">Administrar en Comunidades →</a></p></div>` : ""
+    ].join("");
+
+    actions.hidden = s.status !== "pending";
+
+    const labels = { approved: "Aprobada", rejected: "Rechazada" };
+    document.getElementById("history").innerHTML = [
+        `<p>${formatDate(s.created_at)} · Enviada</p>`,
+        ...log.map(entry => `<p>${formatDate(entry.created_at)} · ${labels[entry.new_state] || esc(entry.action)}${entry.admin_name ? ` por ${esc(entry.admin_name)}` : ""}</p>`),
+        s.status === "pending" ? "<p>Pendiente de revisión</p>" : ""
+    ].join("");
+}
+
+async function decide(action, payload) {
+    actions.querySelectorAll("button").forEach(b => b.disabled = true);
+    try {
+        await api(`/api/admin/submissions/${encodeURIComponent(id)}/${action}`, { method: "POST", body: payload });
+        showMessage("success", action === "approve" ? "Solicitud aprobada y publicada." : "Solicitud rechazada.");
+        await load();
+    } catch (err) {
+        showMessage("error", err.message);
+    } finally {
+        actions.querySelectorAll("button").forEach(b => b.disabled = false);
+    }
+}
+
+document.getElementById("approve").addEventListener("click", () => {
+    if (confirm("¿Aprobar y publicar esta comunidad? Solo se publicarán los campos autorizados.")) decide("approve", {});
+});
+
+document.getElementById("reject").addEventListener("click", () => {
+    const comment = prompt("Motivo del rechazo (opcional):");
+    if (comment !== null) decide("reject", { comment });
+});
+
+load().catch(err => {
+    document.getElementById("title").textContent = "No se pudo cargar la solicitud";
+    rows.innerHTML = `<p class="empty-state">${esc(err.message)}</p>`;
+});
+    </script>
   </body>
 </html>

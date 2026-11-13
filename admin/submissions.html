@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/extras.css">
     <title>Solicitudes | Casa Pueblo</title>
   </head>
   <body class="admin-body">
@@ -25,8 +26,8 @@
           </div>
         </div>
         <div class="toolbar">
-          <div class="filters"><button class="filter active">Todas</button><button class="filter">Pendientes</button><button class="filter">Aprobadas</button><button class="filter">Rechazadas</button>
-      </div><input class="search" placeholder="Buscar comunidad...">
+          <div class="filters"><button class="filter active" data-status="">Todas</button><button class="filter" data-status="pending">Pendientes</button><button class="filter" data-status="approved">Aprobadas</button><button class="filter" data-status="rejected">Rechazadas</button>
+      </div><input class="search" id="search" type="search" placeholder="Buscar comunidad..." aria-label="Buscar comunidad">
         </div>
         <div class="table-wrap">
           <table class="table">
@@ -44,71 +45,53 @@
                 </th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Comunidad 1
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td>01 nov 2026
-                </td>
-                <td><span class="status pending">Pendiente</span></td>
-                <td><a class="small-button" href="submission.html">Abrir</a></td>
-              </tr>
-              <tr>
-                <td>Comunidad 2
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td>02 nov 2026
-                </td>
-                <td><span class="status pending">Pendiente</span></td>
-                <td><a class="small-button" href="submission.html">Abrir</a></td>
-              </tr>
-              <tr>
-                <td>Comunidad 3
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td>03 nov 2026
-                </td>
-                <td><span class="status pending">Pendiente</span></td>
-                <td><a class="small-button" href="submission.html">Abrir</a></td>
-              </tr>
-              <tr>
-                <td>Comunidad 4
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td>04 nov 2026
-                </td>
-                <td><span class="status approved">Aprobada</span></td>
-                <td><a class="small-button" href="submission.html">Abrir</a></td>
-              </tr>
-              <tr>
-                <td>Comunidad 5
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td>05 nov 2026
-                </td>
-                <td><span class="status approved">Aprobada</span></td>
-                <td><a class="small-button" href="submission.html">Abrir</a></td>
-              </tr>
-              <tr>
-                <td>Comunidad 6
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td>06 nov 2026
-                </td>
-                <td><span class="status approved">Aprobada</span></td>
-                <td><a class="small-button" href="submission.html">Abrir</a></td>
-              </tr>
-            </tbody>
+            <tbody id="submissionsBody"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
           </table>
         </div>
       </main>
     </div>
+    <script src="../js/admin.js"></script>
+    <script>
+const { api, esc, formatDate, statusBadge } = CPAdmin;
+const body = document.getElementById("submissionsBody");
+const search = document.getElementById("search");
+let status = "";
+
+async function load() {
+    const query = new URLSearchParams();
+    if (status) query.set("status", status);
+    if (search.value.trim()) query.set("q", search.value.trim());
+
+    try {
+        const { submissions } = await api(`/api/admin/submissions?${query}`);
+        body.innerHTML = submissions.length
+            ? submissions.map(s => `
+                <tr>
+                    <td>${esc(s.community_name)}</td>
+                    <td>${s.location_text ? esc(s.location_text) : '<span class="muted">Sin ubicación</span>'}</td>
+                    <td>${formatDate(s.created_at)}</td>
+                    <td>${statusBadge(s.status)}</td>
+                    <td><a class="small-button" href="submission.html?id=${s.id}">Abrir</a></td>
+                </tr>`).join("")
+            : `<tr><td colspan="5" class="empty-state">No hay solicitudes que coincidan.</td></tr>`;
+    } catch (err) {
+        body.innerHTML = `<tr><td colspan="5" class="empty-state">${esc(err.message)}</td></tr>`;
+    }
+}
+
+document.querySelectorAll(".filter").forEach(button => button.addEventListener("click", () => {
+    document.querySelectorAll(".filter").forEach(b => b.classList.toggle("active", b === button));
+    status = button.dataset.status;
+    load();
+}));
+
+let timer;
+search.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(load, 250);
+});
+
+load();
+    </script>
   </body>
 </html>

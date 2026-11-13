@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administradores | Casa Pueblo</title>
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/extras.css">
   </head>
   <body class="admin-body">
     <div class="admin-shell">
@@ -62,7 +63,7 @@
           </div>
           <div><strong>Control de acceso</strong>
             <p>
-                    En la versión final, estas cuentas estarán protegidas por autenticación segura y permisos definidos por el backend.</p></div>
+                    Las contraseñas se guardan cifradas (PBKDF2-SHA256) y nunca se muestran. Una cuenta desactivada pierde el acceso de inmediato.</p></div>
         </section>
       </main>
     </div>
@@ -73,99 +74,64 @@
         <h2 id="modalTitle">Añadir administrador</h2>
         <p class="modal-description">
             Crea una cuenta para una persona autorizada a administrar la plataforma.</p>
-        <form id="adminForm"><input type="hidden" id="editIndex">
+        <form id="adminForm"><input type="hidden" id="editId">
+          <div class="form-message" id="adminMessage" role="alert" hidden></div>
           <div class="form-group"><label for="adminName">Nombre completo</label><input id="adminName" type="text" placeholder="Ej. María Rivera" required></div>
           <div class="form-row">
             <div class="form-group"><label for="adminUsername">Usuario</label><input id="adminUsername" type="text" placeholder="Ej. mrivera" required></div>
-            <div class="form-group"><label for="adminEmail">Correo electrónico</label><input id="adminEmail" type="email" placeholder="correo@ejemplo.com" required></div>
+            <div class="form-group"><label for="adminEmail">Correo electrónico</label><input id="adminEmail" type="email" placeholder="correo@ejemplo.com"></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label for="adminPassword">Contraseña</label><input id="adminPassword" type="password" placeholder="Contraseña" required></div>
-            <div class="form-group"><label for="adminPasswordConfirm">Confirmar contraseña</label><input id="adminPasswordConfirm" type="password" placeholder="Repite la contraseña" required></div>
+            <div class="form-group"><label for="adminPassword">Contraseña</label><input id="adminPassword" type="password" placeholder="Contraseña" autocomplete="new-password" minlength="8" required></div>
+            <div class="form-group"><label for="adminPasswordConfirm">Confirmar contraseña</label><input id="adminPasswordConfirm" type="password" placeholder="Repite la contraseña" autocomplete="new-password" required></div>
           </div>
           <p class="form-hint">
-                Demo: los datos se guardan localmente en este navegador. En producción se manejarán desde el backend.</p>
+                La contraseña debe tener al menos 8 caracteres. Al editar, déjala en blanco para conservar la actual.</p>
           <div class="modal-actions"><button type="button" class="button secondary" id="cancelModal">Cancelar</button><button type="submit" class="button primary" id="saveAdmin">Crear administrador</button>
       </div>
         </form></div>
     </div>
+    <script src="../js/admin.js"></script>
     <script>
-const STORAGE_KEY = "casaPuebloAdmins";
+const { api, esc, initials } = CPAdmin;
+const tbody = document.getElementById("adminTableBody");
+const modal = document.getElementById("adminModal");
+const form = document.getElementById("adminForm");
+const message = document.getElementById("adminMessage");
+const field = id => document.getElementById(id);
+let admins = [];
 
-const defaultAdmins = [
-    {
-        name: "Ana Colón",
-        username: "anasofia",
-        email: "ana@example.com",
-        password: "demo123",
-        active: true
-    },
-    {
-        name: "Juan Pérez",
-        username: "jperez",
-        email: "juan@example.com",
-        password: "demo123",
-        active: true
-    },
-    {
-        name: "María Rivera",
-        username: "mrivera",
-        email: "maria@example.com",
-        password: "demo123",
-        active: false
+async function renderAdmins() {
+    try {
+        admins = (await api("/api/admin/administrators")).administrators;
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${esc(err.message)}</td></tr>`;
+        return;
     }
-];
 
-function getAdmins() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultAdmins));
-        return [...defaultAdmins];
-    }
-    return JSON.parse(saved);
-}
-
-function saveAdmins(admins) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(admins));
-}
-
-function initials(name) {
-    return name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(word => word[0].toUpperCase())
-        .join("");
-}
-
-function renderAdmins() {
-    const tbody = document.getElementById("adminTableBody");
-    const admins = getAdmins();
-
-    tbody.innerHTML = admins.map((admin, index) => `
+    tbody.innerHTML = admins.map(admin => `
         <tr>
             <td>
                 <div class="table-user">
-                    <span class="table-avatar">${initials(admin.name)}</span>
+                    <span class="table-avatar">${esc(initials(admin.full_name))}</span>
                     <div>
-                        <strong>${escapeHtml(admin.name)}</strong>
+                        <strong>${esc(admin.full_name)}</strong>
                         <small>Administrador</small>
                     </div>
                 </div>
             </td>
-            <td>${escapeHtml(admin.username)}</td>
-            <td>${escapeHtml(admin.email)}</td>
+            <td>${esc(admin.username)}</td>
+            <td>${admin.email ? esc(admin.email) : "—"}</td>
             <td>
-                <span class="status ${admin.active ? "approved" : "inactive"}">
-                    ${admin.active ? "Activo" : "Inactivo"}
+                <span class="status ${admin.is_active ? "approved" : "inactive"}">
+                    ${admin.is_active ? "Activo" : "Inactivo"}
                 </span>
             </td>
             <td>
                 <div class="actions">
-                    <button class="small-button" onclick="editAdmin(${index})">Editar</button>
-                    <button class="small-button ${admin.active ? "reject" : "approve"}"
-                            onclick="toggleAdmin(${index})">
-                        ${admin.active ? "Desactivar" : "Activar"}
+                    <button class="small-button" data-edit="${admin.id}">Editar</button>
+                    <button class="small-button ${admin.is_active ? "reject" : "approve"}" data-toggle="${admin.id}">
+                        ${admin.is_active ? "Desactivar" : "Activar"}
                     </button>
                 </div>
             </td>
@@ -173,39 +139,25 @@ function renderAdmins() {
     `).join("");
 }
 
-function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-    }[char]));
-}
-
-const modal = document.getElementById("adminModal");
-const form = document.getElementById("adminForm");
-
-function openModal(index = null) {
+function openModal(admin = null) {
     form.reset();
-    document.getElementById("editIndex").value = index ?? "";
-    document.getElementById("modalTitle").textContent =
-        index === null ? "Añadir administrador" : "Editar administrador";
-    document.getElementById("saveAdmin").textContent =
-        index === null ? "Crear administrador" : "Guardar cambios";
+    message.hidden = true;
+    field("editId").value = admin ? admin.id : "";
+    field("modalTitle").textContent = admin ? "Editar administrador" : "Añadir administrador";
+    field("saveAdmin").textContent = admin ? "Guardar cambios" : "Crear administrador";
+    // Passwords are never sent back from the server; on edit they are optional.
+    field("adminPassword").required = !admin;
+    field("adminPasswordConfirm").required = !admin;
 
-    if (index !== null) {
-        const admin = getAdmins()[index];
-        document.getElementById("adminName").value = admin.name;
-        document.getElementById("adminUsername").value = admin.username;
-        document.getElementById("adminEmail").value = admin.email;
-        document.getElementById("adminPassword").value = admin.password;
-        document.getElementById("adminPasswordConfirm").value = admin.password;
+    if (admin) {
+        field("adminName").value = admin.full_name;
+        field("adminUsername").value = admin.username;
+        field("adminEmail").value = admin.email ?? "";
     }
 
     modal.classList.add("show");
     modal.setAttribute("aria-hidden", "false");
-    document.getElementById("adminName").focus();
+    field("adminName").focus();
 }
 
 function closeModal() {
@@ -213,92 +165,59 @@ function closeModal() {
     modal.setAttribute("aria-hidden", "true");
 }
 
-document.getElementById("openAddAdmin").addEventListener("click", () => openModal());
-document.getElementById("closeModal").addEventListener("click", closeModal);
-document.getElementById("cancelModal").addEventListener("click", closeModal);
+function showError(text) {
+    message.className = "form-message error";
+    message.textContent = text;
+    message.hidden = false;
+}
 
-modal.addEventListener("click", event => {
-    if (event.target === modal) closeModal();
-});
+field("openAddAdmin").addEventListener("click", () => openModal());
+field("closeModal").addEventListener("click", closeModal);
+field("cancelModal").addEventListener("click", closeModal);
+modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
 
-form.addEventListener("submit", event => {
+form.addEventListener("submit", async event => {
     event.preventDefault();
+    const id = field("editId").value;
+    const password = field("adminPassword").value;
 
-    const name = document.getElementById("adminName").value.trim();
-    const username = document.getElementById("adminUsername").value.trim();
-    const email = document.getElementById("adminEmail").value.trim();
-    const password = document.getElementById("adminPassword").value;
-    const confirmation = document.getElementById("adminPasswordConfirm").value;
-    const editIndex = document.getElementById("editIndex").value;
-
-    if (password !== confirmation) {
-        alert("Las contraseñas no coinciden.");
+    if (password !== field("adminPasswordConfirm").value) {
+        showError("Las contraseñas no coinciden.");
         return;
     }
 
-    const admins = getAdmins();
+    const payload = {
+        full_name: field("adminName").value.trim(),
+        username: field("adminUsername").value.trim(),
+        email: field("adminEmail").value.trim() || null
+    };
+    if (password) payload.password = password;
 
-    const duplicate = admins.some((admin, index) =>
-        admin.username.toLowerCase() === username.toLowerCase() &&
-        String(index) !== editIndex
-    );
-
-    if (duplicate) {
-        alert("Ese nombre de usuario ya existe.");
-        return;
-    }
-
-    if (editIndex === "") {
-        admins.push({
-            name,
-            username,
-            email,
-            password,
-            active: true
+    try {
+        await api(id ? `/api/admin/administrators/${id}` : "/api/admin/administrators", {
+            method: id ? "PUT" : "POST",
+            body: payload
         });
-        alert("Administrador creado correctamente.");
-    } else {
-        const index = Number(editIndex);
-        admins[index] = {
-            ...admins[index],
-            name,
-            username,
-            email,
-            password
-        };
-        alert("Administrador actualizado correctamente.");
+        closeModal();
+        renderAdmins();
+    } catch (err) {
+        showError(err.message);
     }
-
-    saveAdmins(admins);
-    renderAdmins();
-    closeModal();
 });
 
-window.editAdmin = function(index) {
-    openModal(index);
-};
-
-window.toggleAdmin = function(index) {
-    const admins = getAdmins();
-
-    if (admins[index].active) {
-        const activeCount = admins.filter(admin => admin.active).length;
-
-        if (activeCount === 1) {
-            alert("Debe existir al menos un administrador activo.");
-            return;
+tbody.addEventListener("click", async event => {
+    const edit = event.target.closest("[data-edit]");
+    const toggle = event.target.closest("[data-toggle]");
+    if (edit) openModal(admins.find(a => a.id === Number(edit.dataset.edit)));
+    if (toggle) {
+        const admin = admins.find(a => a.id === Number(toggle.dataset.toggle));
+        try {
+            await api(`/api/admin/administrators/${admin.id}`, { method: "PUT", body: { is_active: !admin.is_active } });
+        } catch (err) {
+            alert(err.message);
         }
+        renderAdmins();
     }
-
-    admins[index].active = !admins[index].active;
-    saveAdmins(admins);
-    renderAdmins();
-};
-
-document.getElementById("logoutLink").addEventListener("click", event => {
-    event.preventDefault();
-    localStorage.removeItem("casaPuebloAdminSession");
-    window.location.href = "login.html";
 });
 
 renderAdmins();

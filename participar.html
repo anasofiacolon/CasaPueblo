@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/extras.css">
     <title>Participa | Casa Pueblo</title>
   </head>
   <body>
@@ -29,14 +30,24 @@
     </header>
     <main class="section">
       <div class="form-layout">
-        <form class="form-card" onsubmit="return false">
+        <form class="form-card" id="submissionForm">
           <h2>Información de la comunidad</h2>
-          <div class="form-group"><label for="name">Nombre de la comunidad *</label><input id="name" required></div>
-          <div class="form-group"><label for="location">Ubicación *</label><input id="location" required placeholder="Municipio, Puerto Rico"></div>
+          <div class="form-message" id="formMessage" role="status" hidden></div>
+          <div class="form-group"><label for="name">Nombre de la comunidad *</label><input id="name" required maxlength="200"></div>
+          <div class="form-group"><label for="location">Ubicación (opcional)</label><input id="location" maxlength="300" placeholder="Municipio, Puerto Rico"><small class="field-hint">Puedes dejarla en blanco. Si la compartes, no se publicará a menos que lo autorices abajo.</small></div>
           <div class="form-group"><label for="description">Descripción de la comunidad *</label><textarea id="description" required></textarea></div>
           <div class="form-group"><label for="initiative">Iniciativa energética *</label><textarea id="initiative" required></textarea></div>
           <div class="form-group"><label for="contact">Información de contacto *</label><input id="contact" type="email" required></div>
-          <div class="form-group"><label for="comments">Comentarios adicionales</label><textarea id="comments"></textarea></div><button class="button primary" type="submit">Enviar información</button>
+          <div class="form-group"><label for="comments">Comentarios adicionales</label><textarea id="comments"></textarea><small class="field-hint">Los comentarios siempre son privados: solo los ve el equipo administrador.</small></div>
+          <fieldset class="privacy-fieldset">
+            <legend>Privacidad: ¿qué se puede publicar?</legend>
+            <p>Casa Pueblo recibe toda la información. Tú decides qué campos pueden aparecer en el sitio público si la solicitud es aprobada.</p>
+            <label class="toggle" for="show_community_name"><input type="checkbox" id="show_community_name" checked><span>Nombre de la comunidad</span></label>
+            <label class="toggle" for="show_location"><input type="checkbox" id="show_location"><span>Ubicación<small>Oculta por defecto.</small></span></label>
+            <label class="toggle" for="show_description"><input type="checkbox" id="show_description" checked><span>Descripción de la comunidad</span></label>
+            <label class="toggle" for="show_energy_initiative_details"><input type="checkbox" id="show_energy_initiative_details" checked><span>Iniciativa energética</span></label>
+            <label class="toggle" for="show_submitter_email"><input type="checkbox" id="show_submitter_email"><span>Correo de contacto<small>Confidencial por defecto.</small></span></label>
+          </fieldset><button class="button primary" type="submit">Enviar información</button>
         </form>
         <aside class="help-card">
           <h2>Antes de enviar</h2>
@@ -54,5 +65,6 @@
         <a href="proyecto.html">El proyecto</a>
         <a href="participar.html">Participa</a></div>
     </footer>
+    <script src="js/main.js"></script>
   </body>
 </html>

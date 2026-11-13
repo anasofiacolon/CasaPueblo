@@ -1,0 +1,7 @@
+# Only the static site (HTML, css/, js/) is uploaded as public assets.
+# Everything else in the repo root stays private.
+/*
+!/*.html
+!/admin
+!/css
+!/js

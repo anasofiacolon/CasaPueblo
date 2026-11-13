@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/extras.css">
     <title>Dashboard | Casa Pueblo</title>
   </head>
   <body class="admin-body">
@@ -22,17 +23,17 @@
           <div>
             <p class="eyebrow">ADMINISTRACIÓN</p>
             <h1 style="font-size:3rem">Dashboard</h1>
-          </div><span>Administrador</span>
+          </div><span data-admin-name>Administrador</span>
         </div>
         <div class="admin-grid">
           <div class="stat">
-            <p>Solicitudes pendientes</p><strong>08</strong>
+            <p>Solicitudes pendientes</p><strong id="statPending">—</strong>
           </div>
           <div class="stat">
-            <p>Comunidades publicadas</p><strong>24</strong>
+            <p>Comunidades publicadas</p><strong id="statPublished">—</strong>
           </div>
           <div class="stat">
-            <p>Comunidades ocultas</p><strong>03</strong>
+            <p>Comunidades ocultas</p><strong id="statHidden">—</strong>
           </div>
         </div>
         <section style="margin-top:25px" class="admin-card">
@@ -53,34 +54,33 @@
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>Comunidad A
-                  </td>
-                  <td><span class="status pending">Pendiente</span></td>
-                  <td>06 nov 2026
-                  </td>
-                  <td><a href="submission.html">Revisar</a></td>
-                </tr>
-                <tr>
-                  <td>Comunidad B
-                  </td>
-                  <td><span class="status approved">Aprobada</span></td>
-                  <td>05 nov 2026
-                  </td>
-                  <td><a href="comunidades.html">Ver</a></td>
-                </tr>
-              </tbody>
+              <tbody id="recentBody"><tr><td colspan="4" class="empty-state">Cargando…</td></tr></tbody>
             </table>
           </div>
         </section>
       </main>
     </div>
+    <script src="../js/admin.js"></script>
     <script>
-document.getElementById("logoutLink")?.addEventListener("click", function(e) {
-    e.preventDefault();
-    localStorage.removeItem("casaPuebloAdminSession");
-    window.location.href = "login.html";
+const { api, esc, formatDate, statusBadge } = CPAdmin;
+const pad = n => String(n).padStart(2, "0");
+
+api("/api/admin/stats").then(stats => {
+    document.getElementById("statPending").textContent = pad(stats.pending_submissions);
+    document.getElementById("statPublished").textContent = pad(stats.published_communities);
+    document.getElementById("statHidden").textContent = pad(stats.hidden_communities);
+
+    document.getElementById("recentBody").innerHTML = stats.recent_submissions.length
+        ? stats.recent_submissions.map(s => `
+            <tr>
+                <td>${esc(s.community_name)}</td>
+                <td>${statusBadge(s.status)}</td>
+                <td>${formatDate(s.created_at)}</td>
+                <td><a href="submission.html?id=${s.id}">${s.status === "pending" ? "Revisar" : "Ver"}</a></td>
+            </tr>`).join("")
+        : `<tr><td colspan="4" class="empty-state">Todavía no hay solicitudes.</td></tr>`;
+}).catch(err => {
+    document.getElementById("recentBody").innerHTML = `<tr><td colspan="4" class="empty-state">${esc(err.message)}</td></tr>`;
 });
     </script>
   </body>

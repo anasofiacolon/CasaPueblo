@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/extras.css">
     <title>Administración | Casa Pueblo</title>
   </head>
   <body class="admin-body">
@@ -22,42 +23,47 @@
         <p class="login-error" id="loginError" role="alert"></p><button class="button primary" type="submit">
             Entrar al panel
         </button>
-        <div class="demo-credentials"><strong>Acceso de demostración</strong><span>Usuario: <b>admin</b></span><span>Contraseña: <b>admin123</b></span></div>
+        <div class="demo-credentials" id="demoCredentials" hidden><strong>Acceso de demostración</strong><span>Usuario: <b>admin</b></span><span>Contraseña: <b>admin123</b></span></div>
         <p class="login-back"><a href="../index.html">← Volver al sitio público</a></p></form>
     </main>
     <script>
 const form = document.getElementById("loginForm");
 const error = document.getElementById("loginError");
+const submit = form.querySelector('button[type="submit"]');
 
-form.addEventListener("submit", event => {
+// The development account only exists on a local database (npm run seed).
+if (["localhost", "127.0.0.1"].includes(location.hostname)) {
+    document.getElementById("demoCredentials").hidden = false;
+}
+
+form.addEventListener("submit", async event => {
     event.preventDefault();
+    error.textContent = "";
+    submit.disabled = true;
 
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
+    try {
+        const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({
+                username: document.getElementById("username").value.trim(),
+                password: document.getElementById("password").value
+            })
+        });
 
-    let valid = username === "admin" && password === "admin123";
+        if (response.ok) {
+            window.location.href = "dashboard.html";
+            return;
+        }
 
-    // Also allow active admins created in the Administradores page.
-    const saved = JSON.parse(localStorage.getItem("casaPuebloAdmins") || "[]");
-    const createdAdmin = saved.find(
-        admin => admin.username === username &&
-                 admin.password === password &&
-                 admin.active
-    );
-
-    if (createdAdmin) valid = true;
-
-    if (!valid) {
-        error.textContent = "El usuario o la contraseña no son correctos.";
-        return;
+        const data = await response.json().catch(() => ({}));
+        error.textContent = data.error || "No se pudo iniciar sesión.";
+    } catch {
+        error.textContent = "No se pudo conectar con el servidor.";
+    } finally {
+        submit.disabled = false;
     }
-
-    localStorage.setItem("casaPuebloAdminSession", JSON.stringify({
-        username,
-        loginAt: new Date().toISOString()
-    }));
-
-    window.location.href = "dashboard.html";
 });
     </script>
   </body>

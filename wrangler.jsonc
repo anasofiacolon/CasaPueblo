@@ -1,0 +1,26 @@
+{
+  // Cloudflare Workers (Static Assets + API) + D1 — runs on the $0 free tier
+  // with NO credit card on file. Do NOT add r2_buckets or images bindings:
+  // Cloudflare blocks them on cardless accounts.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "casa-pueblo-comunidades",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    // The HTML screens live at the repo root; .assetsignore keeps everything
+    // that is not the static site (src, migrations, secrets…) out of the upload.
+    "directory": "./",
+    "binding": "ASSETS",
+    // The Worker runs first for the API and for the admin screens (session guard).
+    "run_worker_first": ["/api/*", "/admin/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "casa-pueblo",
+      // Replace with the id printed by: npx wrangler d1 create casa-pueblo
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

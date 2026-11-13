@@ -1,0 +1,25 @@
+{
+  "name": "casa-pueblo-comunidades",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Comunidades que encienden su propio camino — Casa Pueblo (Cloudflare Workers + D1)",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "seed": "node scripts/seed-admin.mjs --local",
+    "seed:remote": "node scripts/seed-admin.mjs --remote",
+    "setup": "npm run db:migrate && npm run seed",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.8.1",
+    "@cloudflare/workers-types": "^5.20261112.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.161.0"
+  }
+}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/extras.css">
     <title>Comunidades | Administración</title>
   </head>
   <body class="admin-body">
@@ -22,7 +23,7 @@
           <div>
             <p class="eyebrow">CONTENIDO</p>
             <h1 style="font-size:3rem">Comunidades</h1>
-          </div><button class="button primary">+ Nueva comunidad</button>
+          </div><button class="button primary" type="button" id="newCommunity">+ Nueva comunidad</button>
         </div>
         <div class="table-wrap">
           <table class="table">
@@ -40,68 +41,7 @@
                 </th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Comunidad 1
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td><span class="status approved">Visible</span></td>
-                <td>01 nov 2026
-                </td>
-                <td class="actions"><button class="small-button">Editar</button><button class="small-button">Ocultar</button></td>
-              </tr>
-              <tr>
-                <td>Comunidad 2
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td><span class="status approved">Visible</span></td>
-                <td>02 nov 2026
-                </td>
-                <td class="actions"><button class="small-button">Editar</button><button class="small-button">Ocultar</button></td>
-              </tr>
-              <tr>
-                <td>Comunidad 3
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td><span class="status pending">Oculta</span></td>
-                <td>03 nov 2026
-                </td>
-                <td class="actions"><button class="small-button">Editar</button><button class="small-button">Ocultar</button></td>
-              </tr>
-              <tr>
-                <td>Comunidad 4
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td><span class="status approved">Visible</span></td>
-                <td>04 nov 2026
-                </td>
-                <td class="actions"><button class="small-button">Editar</button><button class="small-button">Ocultar</button></td>
-              </tr>
-              <tr>
-                <td>Comunidad 5
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td><span class="status approved">Visible</span></td>
-                <td>05 nov 2026
-                </td>
-                <td class="actions"><button class="small-button">Editar</button><button class="small-button">Ocultar</button></td>
-              </tr>
-              <tr>
-                <td>Comunidad 6
-                </td>
-                <td>Puerto Rico
-                </td>
-                <td><span class="status pending">Oculta</span></td>
-                <td>06 nov 2026
-                </td>
-                <td class="actions"><button class="small-button">Editar</button><button class="small-button">Ocultar</button></td>
-              </tr>
-            </tbody>
+            <tbody id="communitiesBody"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
           </table>
         </div>
         <section style="margin-top:25px" class="admin-card">
@@ -110,5 +50,163 @@
         </section>
       </main>
     </div>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="communityModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="communityModalTitle"><button class="modal-close" id="closeCommunityModal" type="button" aria-label="Cerrar">×</button>
+        <p class="eyebrow">COMUNIDAD</p>
+        <h2 id="communityModalTitle">Nueva comunidad</h2>
+        <p class="modal-description">La ubicación y el contacto permanecen ocultos al público hasta que actives su visibilidad.</p>
+        <form id="communityForm">
+          <div class="form-message" id="communityMessage" role="alert" hidden></div>
+          <div class="form-row">
+            <div class="form-group"><label for="c_name">Nombre *</label><input id="c_name" name="name" maxlength="200" required></div>
+            <div class="form-group"><label for="c_region">Región</label><select id="c_region" name="region"><option value="">Sin región</option><option>Puerto Rico</option><option>América Latina</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label for="c_location_text">Ubicación (opcional)</label><input id="c_location_text" name="location_text" maxlength="300" placeholder="Municipio, País"></div>
+            <div class="form-group"><label for="c_country">País (opcional)</label><input id="c_country" name="country" maxlength="100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label for="c_latitude">Latitud (opcional)</label><input id="c_latitude" name="latitude" inputmode="decimal" placeholder="18.1627"></div>
+            <div class="form-group"><label for="c_longitude">Longitud (opcional)</label><input id="c_longitude" name="longitude" inputmode="decimal" placeholder="-66.7222"></div>
+          </div>
+          <div class="form-group"><label for="c_description">Descripción *</label><textarea id="c_description" name="description" required></textarea></div>
+          <div class="form-group"><label for="c_energy">Iniciativa energética *</label><textarea id="c_energy" name="energy_initiative_details" required></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label for="c_tags">Propuestas (separadas por ;)</label><input id="c_tags" name="proposals_tags" maxlength="500" placeholder="Solar;Microredes"></div>
+            <div class="form-group"><label for="c_website">Sitio web</label><input id="c_website" name="website_url" type="url" maxlength="500" placeholder="https://"></div>
+          </div>
+          <div class="form-group"><label for="c_email">Correo de contacto (privado)</label><input id="c_email" name="private_contact_email" type="email" maxlength="254"></div>
+          <div class="form-group"><label for="c_comments">Notas internas (nunca se publican)</label><textarea id="c_comments" name="private_comments"></textarea></div>
+          <fieldset class="privacy-fieldset">
+            <legend>Visibilidad pública</legend>
+            <div class="toggle-grid">
+              <label class="toggle"><input type="checkbox" name="is_visible"><span>Perfil publicado</span></label>
+              <label class="toggle"><input type="checkbox" name="show_name"><span>Nombre</span></label>
+              <label class="toggle"><input type="checkbox" name="show_location"><span>Ubicación<small>Oculta por defecto.</small></span></label>
+              <label class="toggle"><input type="checkbox" name="show_on_map"><span>Marcador en el mapa<small>Requiere ubicación visible y coordenadas.</small></span></label>
+              <label class="toggle"><input type="checkbox" name="show_description"><span>Descripción</span></label>
+              <label class="toggle"><input type="checkbox" name="show_energy_initiative_details"><span>Iniciativa energética</span></label>
+              <label class="toggle"><input type="checkbox" name="show_website_url"><span>Sitio web</span></label>
+              <label class="toggle"><input type="checkbox" name="show_contact_email"><span>Correo de contacto<small>Confidencial por defecto.</small></span></label>
+            </div>
+          </fieldset>
+          <div class="modal-actions"><button type="button" class="button danger" id="deleteCommunity" hidden>Eliminar</button><button type="button" class="button secondary" id="cancelCommunityModal">Cancelar</button><button type="submit" class="button primary" id="saveCommunity">Guardar</button>
+      </div>
+        </form></div>
+    </div>
+    <script src="../js/admin.js"></script>
+    <script>
+const { api, esc, formatDate } = CPAdmin;
+const body = document.getElementById("communitiesBody");
+const modal = document.getElementById("communityModal");
+const form = document.getElementById("communityForm");
+const message = document.getElementById("communityMessage");
+const deleteButton = document.getElementById("deleteCommunity");
+
+const TEXT_FIELDS = ["name", "region", "location_text", "country", "latitude", "longitude", "description",
+    "energy_initiative_details", "proposals_tags", "website_url", "private_contact_email", "private_comments"];
+const FLAGS = ["is_visible", "show_name", "show_location", "show_on_map", "show_description",
+    "show_energy_initiative_details", "show_website_url", "show_contact_email"];
+// Same defaults as the database: location, map and contact start hidden.
+const NEW_FLAGS = { is_visible: 1, show_name: 1, show_location: 0, show_on_map: 0, show_description: 1,
+    show_energy_initiative_details: 1, show_website_url: 1, show_contact_email: 0 };
+
+let communities = [];
+let editingId = null;
+
+async function load() {
+    try {
+        communities = (await api("/api/admin/communities")).communities;
+        body.innerHTML = communities.length
+            ? communities.map(c => `
+                <tr>
+                    <td>${esc(c.name)}</td>
+                    <td>${c.location_text ? esc(c.location_text) : '<span class="muted">Sin ubicación</span>'}${c.location_text && !c.show_location ? '<span class="visibility-tag private">Oculta</span>' : ""}</td>
+                    <td><span class="status ${c.is_visible ? "approved" : "pending"}">${c.is_visible ? "Visible" : "Oculta"}</span></td>
+                    <td>${formatDate(c.updated_at)}</td>
+                    <td class="actions"><button class="small-button" data-edit="${c.id}">Editar</button><button class="small-button" data-toggle="${c.id}">${c.is_visible ? "Ocultar" : "Mostrar"}</button></td>
+                </tr>`).join("")
+            : `<tr><td colspan="5" class="empty-state">Todavía no hay comunidades.</td></tr>`;
+    } catch (err) {
+        body.innerHTML = `<tr><td colspan="5" class="empty-state">${esc(err.message)}</td></tr>`;
+    }
+}
+
+function openModal(community = null) {
+    form.reset();
+    message.hidden = true;
+    editingId = community ? community.id : null;
+    document.getElementById("communityModalTitle").textContent = community ? "Editar comunidad" : "Nueva comunidad";
+    deleteButton.hidden = !community;
+    for (const field of TEXT_FIELDS) form.elements[field].value = community?.[field] ?? "";
+    for (const field of FLAGS) form.elements[field].checked = Boolean((community ?? NEW_FLAGS)[field]);
+    // Rows imported from Excel may arrive without these texts; they stay optional until filled in.
+    for (const field of ["description", "energy_initiative_details"]) form.elements[field].required = !community || Boolean(community[field]);
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+    form.elements.name.focus();
+}
+
+function closeModal() {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+body.addEventListener("click", async event => {
+    const edit = event.target.closest("[data-edit]");
+    const toggle = event.target.closest("[data-toggle]");
+    if (edit) openModal(communities.find(c => c.id === Number(edit.dataset.edit)));
+    if (toggle) {
+        const community = communities.find(c => c.id === Number(toggle.dataset.toggle));
+        toggle.disabled = true;
+        try {
+            await api(`/api/admin/communities/${community.id}`, { method: "PUT", body: { is_visible: !community.is_visible } });
+        } catch (err) {
+            alert(err.message);
+        }
+        load();
+    }
+});
+
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const payload = {};
+    // Blank optional fields (including location) are sent as null.
+    for (const field of TEXT_FIELDS) payload[field] = form.elements[field].value.trim() || null;
+    for (const field of FLAGS) payload[field] = form.elements[field].checked;
+
+    try {
+        await api(editingId ? `/api/admin/communities/${editingId}` : "/api/admin/communities", {
+            method: editingId ? "PUT" : "POST",
+            body: payload
+        });
+        closeModal();
+        load();
+    } catch (err) {
+        message.className = "form-message error";
+        message.textContent = err.message;
+        message.hidden = false;
+    }
+});
+
+deleteButton.addEventListener("click", async () => {
+    if (!editingId || !confirm("¿Eliminar esta comunidad? Dejará de aparecer en el sitio y en este listado.")) return;
+    try {
+        await api(`/api/admin/communities/${editingId}`, { method: "DELETE" });
+        closeModal();
+        load();
+    } catch (err) {
+        alert(err.message);
+    }
+});
+
+document.getElementById("newCommunity").addEventListener("click", () => openModal());
+document.getElementById("closeCommunityModal").addEventListener("click", closeModal);
+document.getElementById("cancelCommunityModal").addEventListener("click", closeModal);
+modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
+
+load();
+    </script>
   </body>
 </html>

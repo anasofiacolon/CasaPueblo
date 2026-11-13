@@ -1,0 +1,6 @@
+# Copy to .dev.vars for local development (never commit .dev.vars).
+# In production set these with: npx wrangler secret put JWT_SECRET
+JWT_SECRET=change-me-to-a-long-random-string
+# Optional: shared token so Power Automate / scripts can POST to /api/sync/excel
+# without an admin session cookie.
+SYNC_TOKEN=

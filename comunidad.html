@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/extras.css">
     <title>Perfil de comunidad | Casa Pueblo</title>
   </head>
   <body>
@@ -21,36 +22,38 @@
       </div>
     </header>
     <main class="section">
-      <div class="profile-hero">
+      <div class="profile-hero" data-profile="root">
         <div class="profile-image">IMAGEN DE LA COMUNIDAD
         </div>
         <div class="profile-info">
           <p class="eyebrow">PERFIL DE COMUNIDAD</p>
           <h1>Nombre de la comunidad</h1>
-          <div class="meta"><span>📍 Puerto Rico</span><span>☀ Energía solar</span></div>
-          <p>Una comunidad que participa activamente en el desarrollo de soluciones energéticas desde sus propias necesidades, prioridades y capacidades.</p>
+          <div class="meta" data-profile="meta"><span>📍 Puerto Rico</span><span>☀ Energía solar</span></div>
+          <p data-profile="description">Una comunidad que participa activamente en el desarrollo de soluciones energéticas desde sus propias necesidades, prioridades y capacidades.</p>
           <div class="hero-actions" style="margin-top:25px">
-            <a href="mapa.html" class="button primary">Ver en el mapa</a>
+            <a href="mapa.html" class="button primary" data-profile="map-link">Ver en el mapa</a>
             <a href="comunidades.html" class="button secondary">Volver</a></div>
         </div>
       </div>
-      <div class="section" style="padding-left:0;padding-right:0">
+      <div class="section" style="padding-left:0;padding-right:0" data-profile="details">
         <div class="content-block">
-          <p class="eyebrow">SU HISTORIA</p>
+          <p class="eyebrow">CONOCE MÁS</p>
           <h2>Una iniciativa construida desde la comunidad</h2>
-          <p>Esta sección presenta la experiencia de la comunidad, su contexto y el proceso que llevó al desarrollo de su iniciativa energética.</p>
-          <p>Aquí se podrá mostrar información validada y aprobada por Casa Pueblo antes de ser publicada.</p>
+          <div data-profile="more">
+            <p>Esta sección presenta la experiencia de la comunidad, su contexto y el proceso que llevó al desarrollo de su iniciativa energética.</p>
+            <p>Aquí se podrá mostrar información validada y aprobada por Casa Pueblo antes de ser publicada.</p>
+          </div>
         </div>
         <div class="info-grid">
           <article class="card">
             <p class="eyebrow">INICIATIVA</p>
             <h3>Proyecto energético</h3>
-            <p>Descripción de la solución, tecnología utilizada y objetivos de la iniciativa.</p>
+            <p data-profile="initiative">Descripción de la solución, tecnología utilizada y objetivos de la iniciativa.</p>
           </article>
           <article class="card">
             <p class="eyebrow">UBICACIÓN</p>
             <h3>Localización</h3>
-            <p>Información geográfica pública autorizada por la comunidad.</p>
+            <p data-profile="location">Información geográfica pública autorizada por la comunidad.</p>
           </article>
         </div>
       </div>
@@ -64,5 +67,6 @@
         <a href="proyecto.html">El proyecto</a>
         <a href="participar.html">Participa</a></div>
     </footer>
+    <script src="js/main.js"></script>
   </body>
 </html>

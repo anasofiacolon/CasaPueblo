@@ -1,0 +1,73 @@
+/* Additions for the backend-wired screens. styles.css and admin.css are left untouched. */
+
+/* Mobile navigation (main.js toggles .mobile-open) */
+@media (max-width: 850px) {
+  .nav-links.mobile-open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    position: absolute;
+    top: 76px;
+    left: 0;
+    right: 0;
+    padding: 20px 24px 24px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+  }
+  .menu-button { cursor: pointer; color: var(--green-dark); }
+}
+
+/* Per-field privacy toggles */
+.privacy-fieldset {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 18px 8px;
+  margin-bottom: 20px;
+}
+.privacy-fieldset legend { font-weight: 700; padding: 0 6px; }
+.privacy-fieldset > p { font-size: .9rem; margin-bottom: 12px; }
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.toggle input { width: 18px; height: 18px; margin-top: 3px; flex: 0 0 18px; accent-color: var(--green-dark); }
+.toggle small { display: block; color: var(--muted); font-size: .82rem; }
+.toggle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; }
+.field-hint { display: block; color: var(--muted); font-size: .85rem; margin-top: 6px; }
+
+/* Feedback messages */
+.form-message { border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; font-weight: 700; }
+.form-message[hidden] { display: none; }
+.form-message.success { background: #dcebdd; color: var(--green-dark); }
+.form-message.error { background: #f5dddd; color: var(--danger); }
+.empty-state { color: var(--muted); padding: 20px 0; }
+.table .empty-state { text-align: center; padding: 28px 16px; }
+
+/* Leaflet map */
+.map-large.leaflet-container { display: block; font-weight: 400; z-index: 0; }
+.map-list .card.active { border-color: var(--green); box-shadow: 0 0 0 2px var(--green-light); }
+.map-list .card { cursor: default; }
+.map-list button.link { border: 0; background: none; padding: 0; color: var(--green); font-weight: 700; cursor: pointer; margin-right: 12px; }
+
+/* Admin extras */
+.visibility-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: .72rem; font-weight: 700; vertical-align: middle; }
+.visibility-tag.public { background: #dcebdd; color: var(--green); }
+.visibility-tag.private { background: #edf0ee; color: #65706b; }
+.review-row p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.modal-card textarea { min-height: 90px; }
+.button.danger { color: var(--danger); border-color: var(--danger); background: #fff; }
+.button[disabled] { opacity: .6; cursor: not-allowed; }
+
+@media (max-width: 850px) {
+  .toggle-grid { grid-template-columns: 1fr; }
+  /* styles.css leaves this profile grid at two columns on phones, which overflows the screen. */
+  .info-grid { grid-template-columns: 1fr; }
+}
+
+/* Let wide tables scroll inside their wrapper instead of stretching the admin layout. */
+.admin-main { min-width: 0; }
